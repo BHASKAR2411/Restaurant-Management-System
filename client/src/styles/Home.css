@@ -1,0 +1,200 @@
+/* client-frontend/src/styles/Home.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.home-container {
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../assets/header5.png') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+}
+
+.home-header {
+  background: linear-gradient(90deg, #0a1744, #1d4999);
+  color: white;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.home-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.table-indicator {
+  background: #4285f4;
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0.5rem auto;
+  max-width: 150px;
+}
+
+.home-content {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.restaurant-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.restaurant-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2ecc71;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-logo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #2ecc71;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h3 {
+  margin: 0;
+  color: #0a1744;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 1.5rem;
+  text-align: center;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #34495e;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .home-content {
+    padding: 1rem;
+  }
+
+  .home-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .restaurant-logo,
+  .restaurant-logo-placeholder {
+    width: 60px;
+    height: 60px;
+  }
+
+  .feature-card {
+    padding: 1rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .table-indicator {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-content {
+    padding: 0.75rem;
+  }
+
+  .home-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .restaurant-logo,
+  .restaurant-logo-placeholder {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 0.75rem;
+  }
+
+  .feature-card h3 {
+    font-size: 1rem;
+  }
+
+  .table-indicator {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}

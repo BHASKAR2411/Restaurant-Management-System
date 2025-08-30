@@ -1,0 +1,21 @@
+.app {
+  font-family: Arial, sans-serif;
+}
+
+/* Ensure toast notifications are styled consistently */
+.Toastify__toast {
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.Toastify__toast--success {
+  background: #28a745;
+}
+
+.Toastify__toast--error {
+  background: #dc3545;
+}
+
+.Toastify__toast--info {
+  background: #17a2b8;
+}

@@ -1,0 +1,214 @@
+/* admin-frontend/src/styles/Menu.css */
+.menu-container {
+  display: flex;
+}
+
+.menu-content {
+  margin-left: 220px;
+  padding: 2rem;
+  flex: 1;
+  background: url('../assets/header5.png') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+.menu-content h2 {
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.menu-form {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.menu-form input[type="text"],
+.menu-form input[type="number"] {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.menu-form input[type="text"]:focus,
+.menu-form input[type="number"]:focus {
+  outline: none;
+  border-color: #55c1ef;
+  box-shadow: 0 0 0 2px rgba(85, 193, 239, 0.2);
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radio-options {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.radio-group label,
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: #34495e;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"],
+.checkbox-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #55c1ef;
+  transition: transform 0.2s;
+}
+
+.radio-group input[type="radio"]:hover,
+.checkbox-group input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+.menu-form button {
+  padding: 0.75rem;
+  background: #55c1ef;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.menu-form button:hover {
+  background: #1d4999;
+  transform: scale(1.05);
+}
+
+.menu-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-table th,
+.menu-table td {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.menu-table th {
+  background: #2c3e50;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.menu-table td {
+  color: #34495e;
+}
+
+.menu-table button {
+  padding: 0.75rem 1rem;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+  min-width: 80px;
+}
+
+.menu-table td:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.menu-table .enable-button {
+  background: #28a745;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-table .enable-button:hover {
+  background: #218838;
+}
+
+.menu-table .disable-button {
+  background: #ff9800;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-table .disable-button:hover {
+  background: #f57c00;
+}
+
+.menu-table .delete-button {
+  background: #dc3545;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-table .delete-button:hover {
+  background: #c82333;
+}
+
+.menu-table .edit-button {
+  background: #ffc107;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.menu-table .edit-button:hover {
+  background: #e0a800;
+}
+
+.disabled-item {
+  background-color: #f5f5f5;
+  color: #999999;
+  opacity: 0.6;
+}
+
+.disabled-item .enable-button,
+.disabled-item .disable-button,
+.disabled-item .delete-button,
+.disabled-item .edit-button {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 1rem 0;
+  color: #34495e;
+  font-size: 0.9rem;
+  margin-top: auto;
+}

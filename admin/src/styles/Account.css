@@ -1,0 +1,175 @@
+.account-container {
+  display: flex;
+}
+
+.account-content {
+  margin-left: 220px;
+  padding: 2rem;
+  flex: 1;
+  background: url('../assets/header5.png') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+.account-content h2 {
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.account-layout {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* Left Side: User Info */
+.user-info {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  max-width: 700px; /* Added to limit width and prevent stretching */
+}
+
+.profile-picture {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.restaurant-logo {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+}
+
+.logo-placeholder {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 50%;
+  margin: 0 auto;
+  border: 2px dashed #ccc;
+}
+
+.logo-placeholder p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.info-item {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0; /* Added padding for better spacing */
+}
+
+.info-item h4 {
+  color: #34495e;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.info-item p {
+  color: #666;
+  margin: 0;
+}
+
+.info-item a {
+  color: #007bff;
+  text-decoration: none;
+  word-break: break-all; /* Breaks long URLs into multiple lines */
+  overflow-wrap: break-word; /* Ensures cross-browser support for word breaking */
+  max-width: 100%; /* Prevents the link from exceeding the container */
+  display: block; /* Allows the width constraint to apply */
+}
+
+/* Right Side: Form */
+.account-form {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.account-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #34495e;
+}
+
+.account-form input,
+.account-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical; /* Allows vertical resizing for textarea */
+}
+
+.account-form button {
+  padding: 0.75rem;
+  background: #55c1ef;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.account-form button:hover {
+  background: #1d4999;
+}
+
+.account-form button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.profile-picture-preview {
+  margin: 1rem 0;
+}
+
+.profile-picture-preview img {
+  max-width: 100px;
+  border-radius: 8px;
+}
+
+.logout-btn {
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c82333;
+}
+
+.logout-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 1rem 0;
+  color: #34495e;
+  font-size: 0.9rem;
+  margin-top: auto;
+}

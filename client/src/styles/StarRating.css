@@ -1,0 +1,21 @@
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.star {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.star.filled {
+  color: #ffd700;
+}
+
+@media (max-width: 600px) {
+  .star {
+    font-size: 1.5rem;
+  }
+}

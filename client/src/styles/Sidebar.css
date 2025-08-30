@@ -1,0 +1,92 @@
+/* client-frontend/src/styles/Sidebar.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.sidebar-container {
+  position: relative;
+}
+
+.hamburger {
+  display: none;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  transition: transform 0.2s;
+}
+
+.hamburger:hover {
+  transform: scale(1.2);
+}
+
+.sidebar {
+  width: 200px;
+  background: #0a1744;
+  color: white;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 3rem;
+}
+
+.sidebar li {
+  margin: 1.5rem 0;
+}
+
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.sidebar a:hover {
+  color: #4285f4;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-width: 250px;
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .hamburger {
+    font-size: 1.2rem;
+    top: 0.75rem;
+    left: 0.75rem;
+  }
+
+  .sidebar {
+    max-width: 200px;
+  }
+
+  .sidebar a {
+    font-size: 1rem;
+  }
+}

@@ -1,0 +1,185 @@
+.dashboard-container {
+  display: flex;
+}
+
+.dashboard-content {
+  margin-left: 220px;
+  padding: 2rem;
+  flex: 1;
+  background: url('../assets/header5.png') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+.dashboard-content h1 {
+  color: #2c3e50;
+  font-size: 2rem;
+}
+
+.dashboard-content h2 {
+  color: #34495e;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-controls {
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.analytics-controls label {
+  display: flex;
+  flex-direction: column;
+  color: #34495e;
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.analytics-controls input[type="date"],
+.analytics-controls select {
+  padding: 0.5rem;
+  border: 1px solid #55c1ef;
+  border-radius: 4px;
+  background: #fff;
+  color: #34495e;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.analytics-controls input[type="date"]:hover,
+.analytics-controls select:hover {
+  border-color: #1d4999;
+}
+
+.analytics-controls input[type="date"]:focus,
+.analytics-controls select:focus {
+  outline: none;
+  border-color: #1d4999;
+  box-shadow: 0 0 5px rgba(29, 73, 153, 0.3);
+}
+
+.earnings-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.figure-card {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.figure-card h3 {
+  color: #34495e;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.figure-card p {
+  font-size: 1.2rem;
+  color: #1d4999;
+  font-weight: bold;
+}
+
+.charts-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.chart-card {
+  flex: 1;
+  min-width: 300px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-card h3 {
+  color: #34495e;
+  margin-bottom: 1rem;
+}
+
+.view-orders-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #55c1ef;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.view-orders-btn:hover {
+  background: #1d4999;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 1rem 0;
+  color: #34495e;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .earnings-figures {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-container {
+    flex-direction: column;
+  }
+
+  .analytics-controls {
+    max-width: 100%;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .analytics-controls label {
+    flex: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .figure-card p {
+    font-size: 1rem;
+  }
+
+  .view-orders-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}

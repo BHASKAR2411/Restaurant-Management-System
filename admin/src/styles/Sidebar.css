@@ -1,0 +1,80 @@
+.sidebar {
+  width: 220px;
+  background: #2c3e50;
+  color: white;
+  height: 100vh;
+  position: fixed;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.sidebar h3 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 1.5rem 0;
+}
+
+.sidebar a,
+.sidebar button {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  display: block;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: background 0.3s;
+  text-align: center;
+  align-self: center;
+}
+
+.sidebar a:hover,
+.sidebar button:hover {
+  background: #34495e;
+  border-radius: 4px;
+}
+
+/* Style for active link */
+.sidebar a.active {
+  background: #1abc9c; /* Bright teal background for active link */
+  border-radius: 4px;
+  font-weight: bold; /* Make text bold for emphasis */
+  color: white; /* Ensure text remains white */
+}
+
+.saelogo {
+  width: 50%;
+  height: auto;
+  margin-bottom: 0.5rem;
+  margin-left: 24%;
+  border-radius: 5mm;
+  opacity: 1;
+}
+
+/* Specific styles for the Log Out button */
+.logout-item {
+  text-align: center;
+}
+
+.logout-item button {
+  width: 100%;
+  background: #e74c3c; /* Red background to distinguish the Log Out button */
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  transition: background 0.3s;
+}
+
+.logout-item button:hover {
+  background: #c0392b; /* Darker red on hover */
+}

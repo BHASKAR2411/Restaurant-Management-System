@@ -1,0 +1,218 @@
+/* client-frontend/src/styles/Payment.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+.payment-container {
+  min-height: 100vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../assets/header5.png') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+}
+
+.payment-header {
+  background: linear-gradient(90deg, #0a1744, #1d4999);
+  color: white;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.payment-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.back-button {
+  position: absolute;
+  left: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.back-button:hover {
+  transform: scale(1.2);
+}
+
+.table-indicator {
+  background: #4285f4;
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 0.5rem auto;
+  max-width: 150px;
+}
+
+.payment-content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.payment-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.payment-icon {
+  font-size: 2rem;
+  color: #4285f4;
+  margin-bottom: 1rem;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f7ff;
+  border-radius: 50%;
+}
+
+.payment-card input {
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.payment-card input:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.payment-card button {
+  padding: 0.75rem 2rem;
+  background: #0a1744;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  max-width: 300px;
+  width: 100%;
+}
+
+.payment-card button:hover {
+  background: #152a6e;
+  transform: scale(1.05);
+}
+
+.error-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 1.5rem;
+  text-align: center;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+
+.page-footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  color: #34495e;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .payment-content {
+    padding: 1rem;
+  }
+
+  .payment-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .payment-card {
+    padding: 1rem;
+  }
+
+  .payment-icon {
+    font-size: 1.8rem;
+    width: 45px;
+    height: 45px;
+  }
+
+  .payment-card input {
+    max-width: 100%;
+    font-size: 0.95rem;
+  }
+
+  .payment-card button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-content {
+    padding: 0.75rem;
+  }
+
+  .payment-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .back-button {
+    font-size: 1rem;
+  }
+
+  .table-indicator {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .payment-card {
+    padding: 0.75rem;
+  }
+
+  .payment-icon {
+    font-size: 1.6rem;
+    width: 40px;
+    height: 40px;
+  }
+
+  .payment-card input {
+    font-size: 0.9rem;
+  }
+
+  .payment-card button {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
