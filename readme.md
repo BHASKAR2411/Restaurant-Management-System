@@ -1,9 +1,3 @@
-<img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
-
-# [https://github.com/BHASKAR2411/Restaurant-Management-System](https://github.com/BHASKAR2411/Restaurant-Management-System)
-
-Based on the information available about your Restaurant Management System repository, I'll generate a comprehensive README file for your project. Since the repository is primarily JavaScript-based (77.3%) with CSS styling, I'll structure the README to reflect a typical web-based restaurant management solution.
-
 # Restaurant Management System
 
 A comprehensive web-based restaurant management solution that streamlines all aspects of restaurant operations from billing to order management, providing everything a restaurant needs under one roof.
@@ -224,39 +218,4 @@ For support, questions, or suggestions:
 ***
 
 **Made with ❤️ for the restaurant industry**
-
-This README provides a comprehensive overview of your Restaurant Management System, making it easy for users to understand, install, and contribute to your project. You can customize any sections based on the specific features and implementation details of your system.
-<span style="display:none">[^1][^10][^11][^12][^13][^14][^15][^2][^3][^4][^5][^6][^7][^8][^9]</span>
-
-<div style="text-align: center">⁂</div>
-
-[^1]: https://github.com/BHASKAR2411/Restaurant-Management-System
-
-[^2]: https://github.com/topics/restaurant-management
-
-[^3]: https://github.com/harismuneer/Restaurant-Management-System
-
-[^4]: https://github.com/topics/restaurant-management-system?o=desc\&s=forks
-
-[^5]: https://github.com/ReemOsama99/Restaurant-Management-System
-
-[^6]: https://github.com/Amit-Ashok-Swain/Restaurant-Management-System
-
-[^7]: https://github.com/rajvi-patel-22/Restaurant-Management-System-DBMS-project
-
-[^8]: https://github.com/nurlan-aliyev/RestaurantManagementSystem
-
-[^9]: https://github.com/Mishankhatri/Restaurant-Management-System
-
-[^10]: https://github.com/topics/restaurant-management?l=javascript
-
-[^11]: https://github.com/topics/restaurant
-
-[^12]: https://github.com/olasunkanmi-SE/restaurant
-
-[^13]: https://github.com/topics/restaurant-management?l=python\&o=desc\&s=forks\&utf8=✓
-
-[^14]: https://github.com/topics/restaurant-management?l=java
-
-[^15]: https://github.com/topics/restaurant-management-system?l=html\&o=asc\&s=forks
 
