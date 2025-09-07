@@ -10,6 +10,7 @@ const router = express.Router();
 const menuSchema = yup.object().shape({
   category: yup.string().required('Category is required'),
   name: yup.string().required('Name is required'),
+  description: yup.string().optional(),
   isVeg: yup.boolean().required('Veg/non-veg status is required'),
   price: yup.number().positive('Price must be positive').required('Price is required'),
   hasHalf: yup.boolean().optional().default(false),

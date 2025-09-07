@@ -61,6 +61,7 @@
   max-width: 900px;
   margin: 0 auto;
   width: 100%;
+  padding-bottom: 80px; /* Space for footer */
 }
 
 .review-card {
@@ -168,6 +169,7 @@
   color: #34495e;
   font-size: 0.9rem;
   margin-top: auto;
+  padding-bottom: 80px; /* Adjust if needed */
 }
 
 @keyframes fadeIn {

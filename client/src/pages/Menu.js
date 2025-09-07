@@ -1,26 +1,27 @@
-// client-frontend/src/pages/Menu.js
-"use client"
-
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import io from 'socket.io-client';
 import MenuItem from '../components/MenuItem';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { setTableData, getTableData, clearTableData } from '../utils/storage';
 import '../styles/Menu.css';
 
+// Main Menu component
 const Menu = () => {
+  // State declarations
   const [menuItems, setMenuItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
-  const [itemPortions, setItemPortions] = useState({});
   const [expandedCategories, setExpandedCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [vegFilter, setVegFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('default');
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
   const navigate = useNavigate();
 
+  // Extract table and restaurant ID from URL or storage
   const urlParams = new URLSearchParams(window.location.search);
   const tableFromUrl = urlParams.get('table');
   const restaurantFromUrl = urlParams.get('restaurant');
@@ -33,6 +34,7 @@ const Menu = () => {
 
   restaurantId = Number(restaurantId);
 
+  // Effect for fetching menu and setting up WebSocket
   useEffect(() => {
     if (tableFromUrl && restaurantFromUrl) {
       setTableData(tableFromUrl, restaurantFromUrl);
@@ -46,32 +48,56 @@ const Menu = () => {
       return;
     }
 
-    const fetchMenu = async () => {
+    const fetchMenuAndStatus = async () => {
       try {
-        const res = await axios.get(`${process.env.REACT_APP_API_URL}/menu?restaurantId=${restaurantId}`);
-        setMenuItems(res.data);
-        const initialPortions = {};
+        const [menuRes, submitDisabledRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/menu?restaurantId=${restaurantId}`),
+          axios.get(`${process.env.REACT_APP_API_URL}/orders/submit-disabled?restaurantId=${restaurantId}`),
+        ]);
+        setMenuItems(menuRes.data);
+        setIsSubmitDisabled(submitDisabledRes.data.isSubmitDisabled);
         const initialExpanded = {};
-        res.data.forEach((item) => {
-          initialPortions[item.id] = 'full';
-          if (!initialExpanded[item.category]) {
-            initialExpanded[item.category] = false; // Collapse all categories by default
+        menuRes.data.forEach((item) => {
+          if (initialExpanded[item.category] === undefined) {
+            initialExpanded[item.category] = true;
           }
         });
-        setItemPortions(initialPortions);
         setExpandedCategories(initialExpanded);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching menu:', error);
-        toast.error('Failed to load menu');
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load menu or submit status');
         setLoading(false);
       }
     };
-    fetchMenu();
+    fetchMenuAndStatus();
+
+    const socket = io(process.env.REACT_APP_API_URL.replace('/api', ''));
+    socket.on('connect', () => {
+      console.log('WebSocket connected:', socket.id);
+    });
+    socket.on('connect_error', (error) => {
+      console.error('WebSocket connection error:', error.message);
+    });
+    socket.on('disconnect', (reason) => {
+      console.log('WebSocket disconnected:', reason);
+    });
+
+    socket.on('submitDisabledUpdate', (data) => {
+      if (data.restaurantId === restaurantId) {
+        setIsSubmitDisabled(data.isSubmitDisabled);
+        toast.info(`Order submission ${data.isSubmitDisabled ? 'disabled' : 'enabled'}`);
+      }
+    });
+
+    return () => {
+      console.log('Cleaning up WebSocket connection');
+      socket.disconnect();
+    };
   }, [restaurantId, tableFromUrl, restaurantFromUrl]);
 
-  const handleToggleSelect = (item, isChecked) => {
-    const portion = itemPortions[item.id] || 'full';
+  // Handle selecting/unselecting a portion
+  const handleToggleSelect = (item, portion, isChecked) => {
     const itemPrice = portion === 'half' && item.hasHalf ? item.halfPrice : item.price;
     const itemKey = `${item.id}-${portion}`;
 
@@ -82,35 +108,12 @@ const Menu = () => {
           return [...prevItems, { ...item, price: itemPrice, portion, quantity: 1, key: itemKey }];
         }
         return prevItems;
-      } else {
-        return prevItems.filter((i) => i.key !== itemKey);
       }
+      return prevItems.filter((i) => i.key !== itemKey);
     });
   };
 
-  const handlePortionChange = (item, newPortion) => {
-    const oldPortion = itemPortions[item.id] || 'full';
-    const oldItemKey = `${item.id}-${oldPortion}`;
-    const newItemKey = `${item.id}-${newPortion}`;
-    const itemPrice = newPortion === 'half' && item.hasHalf ? item.halfPrice : item.price;
-
-    setItemPortions((prev) => ({
-      ...prev,
-      [item.id]: newPortion,
-    }));
-
-    setSelectedItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.key === oldItemKey);
-      if (existingItem && !prevItems.find((i) => i.key === newItemKey)) {
-        return [
-          ...prevItems,
-          { ...existingItem, portion: newPortion, price: itemPrice, key: newItemKey, quantity: 1 },
-        ];
-      }
-      return prevItems;
-    });
-  };
-
+  // Increment quantity for a specific portion
   const handleIncrement = (item, portion) => {
     const itemKey = `${item.id}-${portion}`;
     setSelectedItems((prevItems) =>
@@ -120,24 +123,27 @@ const Menu = () => {
     );
   };
 
+  // Decrement quantity for a specific portion
   const handleDecrement = (item, portion) => {
     const itemKey = `${item.id}-${portion}`;
     setSelectedItems((prevItems) => {
       const existingItem = prevItems.find((i) => i.key === itemKey);
       if (!existingItem) return prevItems;
       if (existingItem.quantity === 1) {
-        return prevItems.filter((i) => i.key === itemKey);
+        return prevItems.filter((i) => i.key !== itemKey);
       }
       return prevItems.map((i) =>
         i.key === itemKey ? { ...i, quantity: i.quantity - 1 } : i
-      )
+      );
     });
   };
 
+  // Remove an item from selected items
   const handleRemoveItem = (itemKey) => {
     setSelectedItems((prevItems) => prevItems.filter((i) => i.key !== itemKey));
   };
 
+  // Toggle category expansion
   const toggleCategory = (category) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -145,9 +151,15 @@ const Menu = () => {
     }));
   };
 
+  // Submit order
   const handleSubmit = async () => {
     if (selectedItems.length === 0) {
       toast.warn('Please select at least one item');
+      return;
+    }
+
+    if (isSubmitDisabled) {
+      toast.error('Order submission is currently disabled');
       return;
     }
 
@@ -188,10 +200,12 @@ const Menu = () => {
     setLoading(false);
   };
 
+  // Navigate back to home
   const navigateToHome = () => {
     navigate(`/?table=${tableNo}&restaurant=${restaurantId}`);
   };
 
+  // Filter and sort menu items
   const filteredAndSortedItems = menuItems
     .filter((item) => {
       if (vegFilter === 'veg') return item.isVeg;
@@ -205,12 +219,14 @@ const Menu = () => {
       return 0;
     });
 
+  // Group menu items by category
   const groupedMenu = filteredAndSortedItems.reduce((acc, item) => {
     acc[item.category] = acc[item.category] || [];
     acc[item.category].push(item);
     return acc;
   }, {});
 
+  // Handle invalid table or restaurant ID
   if (!tableNo || !restaurantId) {
     return (
       <div className="error-container">
@@ -221,10 +237,12 @@ const Menu = () => {
     );
   }
 
+  // Show loading spinner
   if (loading) {
     return <LoadingSpinner />;
   }
 
+  // Main render
   return (
     <div className="menu-container">
       <div className="menu-header">
@@ -236,82 +254,87 @@ const Menu = () => {
       {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       <div className="menu-controls">
         <div className="controls-card">
-          <div className="dropdowns">
-            <div className="filter-control">
-              <select
-                id="vegFilter"
-                value={vegFilter}
-                onChange={(e) => setVegFilter(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="veg">Veg</option>
-                <option value="non-veg">Non-Veg</option>
-              </select>
-            </div>
-            <div className="sort-control">
-              <select
-                id="sortOption"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-              >
-                <option value="default">Sort</option>
-                <option value="lowToHigh">Price: Low to High</option>
-                <option value="highToLow">Price: High to Low</option>
-              </select>
-            </div>
-          </div>
-          <div className="search-control">
+          <div className="filter-group">
+            <select
+              id="vegFilter"
+              value={vegFilter}
+              onChange={(e) => setVegFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">All</option>
+              <option value="veg">Veg</option>
+              <option value="non-veg">Non-Veg</option>
+            </select>
+            <select
+              id="sortOption"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="filter-select"
+            >
+              <option value="default">Sort</option>
+              <option value="lowToHigh">Price: Low to High</option>
+              <option value="highToLow">Price: High to Low</option>
+            </select>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
+              className="filter-input"
             />
           </div>
         </div>
       </div>
       <div className="menu-content">
-        {Object.keys(groupedMenu).length === 0 ? (
-          <p className="no-items">No menu items available</p>
-        ) : (
-          Object.keys(groupedMenu).map((category) => (
-            <div key={category} className="menu-category">
-              <h3 className="category-title" onClick={() => toggleCategory(category)}>
-                {category}
-                <span className="toggle-icon">{expandedCategories[category] ? '▲' : '▼'}</span>
-              </h3>
-              {expandedCategories[category] && (
-                <ul>
-                  {groupedMenu[category].map((item) => {
-                    const selectedPortion = itemPortions[item.id] || 'full';
-                    const itemKey = `${item.id}-${selectedPortion}`;
-                    const selectedItem = selectedItems.find((i) => i.key === itemKey);
-                    const isSelected = !!selectedItem;
-                    const itemQuantity = selectedItem ? selectedItem.quantity : 0;
+        <div className="menu-items-scrollable">
+          {Object.keys(groupedMenu).length === 0 ? (
+            <p className="no-items">No menu items available</p>
+          ) : (
+            Object.keys(groupedMenu).map((category) => (
+              <div key={category} className="menu-category">
+                <h3 className="category-title" onClick={() => toggleCategory(category)}>
+                  {category}
+                  <span className="toggle-icon">{expandedCategories[category] ? '▲' : '▼'}</span>
+                </h3>
+                {expandedCategories[category] && (
+                  <ul>
+                    {groupedMenu[category].map((item) => {
+                      const fullItemKey = `${item.id}-full`;
+                      const halfItemKey = `${item.id}-half`;
+                      const fullSelectedItem = selectedItems.find((i) => i.key === fullItemKey);
+                      const halfSelectedItem = selectedItems.find((i) => i.key === halfItemKey);
+                      const isFullSelected = !!fullSelectedItem;
+                      const isHalfSelected = !!halfSelectedItem;
+                      const fullQuantity = fullSelectedItem ? fullSelectedItem.quantity : 0;
+                      const halfQuantity = halfSelectedItem ? halfSelectedItem.quantity : 0;
 
-                    return (
-                      <div key={item.id} className={`menu-item-wrapper ${item.isEnabled ? '' : 'disabled-item'}`}>
-                        <MenuItem
-                          item={item}
-                          onToggleSelect={handleToggleSelect}
-                          onPortionChange={handlePortionChange}
-                          onIncrement={handleIncrement}
-                          onDecrement={handleDecrement}
-                          selectedPortion={selectedPortion}
-                          quantity={itemQuantity}
-                          isEnabled={item.isEnabled}
-                          isSelected={isSelected}
-                        />
-                      </div>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          ))
-        )}
+                      return (
+                        <div
+                          key={item.id}
+                          className={`menu-item-wrapper ${item.isEnabled ? '' : 'disabled-item'}`}
+                        >
+                          <MenuItem
+                            item={item}
+                            onToggleSelect={handleToggleSelect}
+                            onIncrement={handleIncrement}
+                            onDecrement={handleDecrement}
+                            fullQuantity={fullQuantity}
+                            halfQuantity={halfQuantity}
+                            isEnabled={item.isEnabled}
+                            isFullSelected={isFullSelected}
+                            isHalfSelected={isHalfSelected}
+                          />
+                        </div>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            ))
+          )}
+        </div>
         {selectedItems.length > 0 && (
-          <div className="order-summary">
+          <div className="order-summary sticky">
             <h4>Selected Items: {selectedItems.reduce((sum, item) => sum + (item.quantity || 0), 0)}</h4>
             <ul>
               {selectedItems.map((item) => (
@@ -323,19 +346,30 @@ const Menu = () => {
                     {item.name} ({item.portion}) x {item.quantity}
                   </span>
                   <span>₹{(item.price * item.quantity).toFixed(2)}</span>
-                  <button onClick={() => handleRemoveItem(item.key)} className="remove-button">Remove</button>
+                  <button onClick={() => handleRemoveItem(item.key)} className="remove-button">
+                    Remove
+                  </button>
                 </li>
               ))}
             </ul>
-            <p className="order-total">Total: ₹{selectedItems.reduce((sum, item) => sum + (item.price * (item.quantity || 0)), 0).toFixed(2)}</p>
-            <button onClick={handleSubmit} className="submit-order-button">Submit Order</button>
+            <p className="order-total">
+              Total: ₹{selectedItems.reduce((sum, item) => sum + (item.price * (item.quantity || 0)), 0).toFixed(2)}
+            </p>
+            <button
+              onClick={handleSubmit}
+              className="submit-order-button"
+              disabled={isSubmitDisabled || loading}
+            >
+              Submit Order
+            </button>
           </div>
         )}
-        <footer className="page-footer">
-          Powered by SAE. All rights reserved.
-        </footer>
       </div>
+      <footer className="page-footer">
+        Powered by SAE. All rights reserved.
+      </footer>
     </div>
   );
 };
+
 export default Menu;

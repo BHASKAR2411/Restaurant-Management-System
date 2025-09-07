@@ -18,6 +18,11 @@
   margin-bottom: 2rem;
 }
 
+.orders-header-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
 .orders-content h2 {
   color: #2c3e50;
   margin-bottom: 0;
@@ -37,18 +42,41 @@
   background: #1d4999;
 }
 
+.disable-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.disable-submit-btn:hover {
+  background: #c0392b;
+}
+
+.disable-submit-btn.enabled {
+  background: #2ecc71;
+}
+
+.disable-submit-btn.enabled:hover {
+  background: #27ae60;
+}
+
 .order-table-container {
-  max-height: 240px; /* Approx 5 rows at ~40px each + header */
+  max-height: 240px;
   overflow-y: auto;
   margin-bottom: 2rem;
 }
 
 .order-table-container.past-orders-table {
-  max-height: 880px; /* Approx 20 rows at ~40px each + header */
+  max-height: 880px;
 }
 
 .order-table {
-  margin-bottom: 0; /* Remove margin as container handles spacing */
+  margin-bottom: 0;
 }
 
 .order-table h3 {
@@ -163,11 +191,13 @@
 
 .receipt-preview {
   flex: 2;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: auto;
+  width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 
 .receipt-preview h3 {
@@ -177,67 +207,94 @@
 
 .receipt-preview-content {
   font-family: 'Courier New', monospace;
-  font-size: 10px;
-  width: 80mm;
-  margin: 0 auto;
-  line-height: 1.4;
+  font-size: 12px;
+  width: 100%;
+  line-height: 1.5;
 }
 
 .receipt-preview-content .receipt-container {
-  border: 1px solid #000;
-  padding: 5px;
+  margin: 0px;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .receipt-preview-content .header {
   text-align: center;
   font-weight: bold;
-  font-size: 12px;
-  margin-bottom: 5px;
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #2c3e50;
 }
 
-.receipt-preview-content .details,
-.receipt-preview-content .footer {
-  margin: 5px 0;
+.receipt-preview-content .logo-placeholder {
+  text-align: center;
+  margin-bottom: 5px;
+  font-size: 10px;
+  color: #7f8c8d;
+}
+
+.receipt-preview-content .details {
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: #34495e;
 }
 
 .receipt-preview-content .details p {
   margin: 2px 0;
-  word-wrap: break-word;
 }
 
 .receipt-preview-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: 5px 0;
+  margin-bottom: 10px;
 }
 
 .receipt-preview-content th,
 .receipt-preview-content td {
-  border: 1px solid #000;
-  padding: 3px;
+  padding: 5px;
   text-align: left;
+  border-bottom: 1px solid #ecf0f1;
 }
 
 .receipt-preview-content th {
-  background-color: #eee;
+  background-color: #ecf0f1;
+  font-weight: bold;
 }
 
 .receipt-preview-content .qty { width: 15%; }
-.receipt-preview-content .item { width: 40%; }
-.receipt-preview-content .price { width: 25%; text-align: right; }
-.receipt-preview-content .amount { width: 20%; text-align: right; }
-.receipt-preview-content .total-table td {
-  text-align: right;
+.receipt-preview-content .item { width: 50%; word-wrap: break-word; }
+.receipt-preview-content .price { width: 17.5%; text-align: right; }
+.receipt-preview-content .amount { width: 17.5%; text-align: right; }
+.receipt-preview-content .totals {
+  margin-top: 10px;
 }
-.receipt-preview-content .total-table .label { text-align: left; }
+.receipt-preview-content .totals p {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0;
+  font-size: 12px;
+  color: #34495e;
+}
+.receipt-preview-content .totals .grand-total {
+  font-weight: bold;
+  color: #2c3e50;
+  border-top: 2px solid #ecf0f1;
+  padding-top: 5px;
+}
 .receipt-preview-content .message {
   text-align: center;
   font-style: italic;
-  margin-top: 5px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #7f8c8d;
 }
-.receipt-preview-content .divider {
-  border-top: 1px dashed #000;
-  margin: 5px 0;
+.receipt-preview-content .footer {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 10px;
+  color: #7f8c8d;
+  border-top: 1px dashed #ecf0f1;
+  padding-top: 5px;
 }
 
 .receipt-preview-content .preview-placeholder {
@@ -340,7 +397,12 @@
     gap: 1rem;
   }
 
-  .take-order-btn {
+  .orders-header-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .take-order-btn, .disable-submit-btn {
     width: 100%;
     text-align: center;
   }
@@ -355,7 +417,8 @@
   }
 
   .receipt-preview {
-    flex: 1;
+    width: 100%;
+    max-height: 500px;
   }
 }
 
@@ -380,5 +443,13 @@
   .receipt-form button {
     padding: 0.5rem;
     font-size: 0.9rem;
+  }
+
+  .receipt-preview-content {
+    font-size: 10px;
+  }
+
+  .receipt-preview-content .header {
+    font-size: 14px;
   }
 }

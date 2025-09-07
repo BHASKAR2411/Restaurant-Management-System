@@ -7,7 +7,7 @@ const sendEmail = async (to, subject, text) => {
   try {
     const msg = {
       to,
-      from: 'datachondriaa@gmail.com', // Replace with your verified sender email
+      from: 'datachondriaa@gmail.com',
       subject,
       text,
     };

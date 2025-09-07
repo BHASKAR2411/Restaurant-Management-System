@@ -42,7 +42,8 @@
 }
 
 .menu-form input[type="text"],
-.menu-form input[type="number"] {
+.menu-form input[type="number"],
+.menu-form textarea {
   padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -50,8 +51,14 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.menu-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
 .menu-form input[type="text"]:focus,
-.menu-form input[type="number"]:focus {
+.menu-form input[type="number"]:focus,
+.menu-form textarea:focus {
   outline: none;
   border-color: #55c1ef;
   box-shadow: 0 0 0 2px rgba(85, 193, 239, 0.2);
@@ -132,6 +139,13 @@
 
 .menu-table td {
   color: #34495e;
+}
+
+/* Style for the Description column to wrap text */
+.menu-table td:nth-child(4) {
+  max-width: 200px; /* Set a maximum width for the description column */
+  word-wrap: break-word; /* Ensure long words break and wrap */
+  white-space: normal; /* Allow text to wrap to the next line */
 }
 
 .menu-table button {

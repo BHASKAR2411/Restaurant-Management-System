@@ -17,7 +17,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTable, setSelectedTable] = useState('');
   const [gstRate, setGstRate] = useState(localStorage.getItem('gstRate') || '0');
-  const [gstType, setGstType] = useState('exclusive');
+  const [gstType, setGstType] = useState('inclusive');
   const [serviceCharge, setServiceCharge] = useState('');
   const [discount, setDiscount] = useState('');
   const [message, setMessage] = useState('Have a nice day!');
@@ -30,11 +30,12 @@ const Orders = () => {
   });
   const [pastOrderDateFilter, setPastOrderDateFilter] = useState('');
   const [visiblePastOrders, setVisiblePastOrders] = useState(20);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
 
   useEffect(() => {
     const fetchOrdersAndRestaurantDetails = async () => {
       try {
-        const [liveRes, recurringRes, pastRes, restaurantRes] = await Promise.all([
+        const [liveRes, recurringRes, pastRes, restaurantRes, submitDisabledRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_URL}/orders/live`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           }),
@@ -47,6 +48,7 @@ const Orders = () => {
           axios.get(`${process.env.REACT_APP_API_URL}/orders/restaurant/details`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           }).catch(() => ({ data: {} })),
+          axios.get(`${process.env.REACT_APP_API_URL}/orders/submit-disabled?restaurantId=${user.id}`),
         ]);
         setLiveOrders(liveRes.data);
         setRecurringOrders(recurringRes.data);
@@ -58,6 +60,7 @@ const Orders = () => {
           phoneNumber: restaurantRes.data.phoneNumber || 'N/A',
           address: restaurantRes.data.address || 'N/A',
         });
+        setIsSubmitDisabled(submitDisabledRes.data.isSubmitDisabled);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -81,21 +84,16 @@ const Orders = () => {
       console.log('WebSocket disconnected:', reason);
     });
 
-    const token = localStorage.getItem('token');
-    let userId;
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userId = payload.id;
-      console.log('Parsed userId from token:', userId);
-    } catch (error) {
-      console.error('Error parsing token:', error);
-      socket.disconnect();
-      return;
-    }
+    socket.on('submitDisabledUpdate', (data) => {
+      if (data.restaurantId === user.id) {
+        setIsSubmitDisabled(data.isSubmitDisabled);
+        toast.info(`Order submission ${data.isSubmitDisabled ? 'disabled' : 'enabled'}`);
+      }
+    });
 
     socket.on('newOrder', (order) => {
       console.log('Received newOrder:', order, 'for restaurantId:', order.restaurantId);
-      if (order.restaurantId === userId) {
+      if (order.restaurantId === user.id) {
         setLiveOrders((prevOrders) => {
           if (prevOrders.some((o) => o.id === order.id)) {
             console.log('Order already exists, skipping:', order.id);
@@ -108,7 +106,7 @@ const Orders = () => {
         });
         toast.info(`New order #${order.id} received for Table ${order.tableNo === 0 ? 'Counter' : order.tableNo}`);
       } else {
-        console.log('Order ignored, restaurantId mismatch:', order.restaurantId, 'vs', userId);
+        console.log('Order ignored, restaurantId mismatch:', order.restaurantId, 'vs', user.id);
       }
     });
 
@@ -139,6 +137,23 @@ const Orders = () => {
       clearInterval(pollInterval);
     };
   }, [user]);
+
+  const handleToggleSubmitDisabled = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.put(
+        `${process.env.REACT_APP_API_URL}/orders/toggle-submit-disabled`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      setIsSubmitDisabled(res.data.isSubmitDisabled);
+      toast.success(`Order submission ${res.data.isSubmitDisabled ? 'disabled' : 'enabled'}`);
+    } catch (error) {
+      console.error('Error toggling submit disabled:', error);
+      toast.error('Failed to toggle submit button state');
+    }
+    setLoading(false);
+  };
 
   const handleComplete = async (id) => {
     setLoading(true);
@@ -198,11 +213,11 @@ const Orders = () => {
           <style>
             body {
               font-family: 'Courier New', monospace;
-              font-size: 10px;
+              font-size: 12px;
               width: 80mm;
               margin: 0;
               padding: 5mm;
-              line-height: 1.4;
+              line-height: 1.5;
             }
             .receipt-container {
               border: 1px solid #000;
@@ -211,6 +226,7 @@ const Orders = () => {
             .header {
               text-align: center;
               font-weight: bold;
+              font-size: 14px;
               margin-bottom: 5px;
             }
             .details {
@@ -226,14 +242,14 @@ const Orders = () => {
             }
             th, td {
               border: 1px solid #000;
-              padding: 3px;
+              padding: 4px;
               text-align: left;
             }
             th {
               background-color: #eee;
             }
             .qty { width: 15%; }
-            .item { width: 55%; }
+            .item { width: 55%; word-wrap: break-word; }
             .price { width: 30%; text-align: right; }
             .total { text-align: right; font-weight: bold; }
             .instructions {
@@ -266,7 +282,7 @@ const Orders = () => {
                   (item) => `
                 <tr>
                   <td class="qty">${item.quantity}</td>
-                  <td class="item">${item.name.slice(0, 20)}</td>
+                  <td class="item">${item.name}</td>
                   <td class="price">₹${item.price.toFixed(2)}</td>
                 </tr>
               `
@@ -281,7 +297,7 @@ const Orders = () => {
                 Instructions:<br>
                 ${order.items
                   .filter((item) => item.specialInstructions)
-                  .map((item) => `- ${item.specialInstructions.slice(0, 30)}`)
+                  .map((item) => `- ${item.specialInstructions}`)
                   .join('<br>')}
               </div>
             `
@@ -326,21 +342,24 @@ const Orders = () => {
       return acc;
     }, []);
 
-    let subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     let discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
-    let serviceChargeAmount = parseFloat(serviceCharge) || 0;
+    const serviceChargeAmount = parseFloat(serviceCharge) || 0;
     let gstAmount = 0;
+    let taxableAmount = 0;
+    const rate = parseFloat(gstRate) / 100;
 
     if (gstType === 'inclusive') {
-      subtotal = subtotal / (1 + parseFloat(gstRate) / 100);
-      discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
-      gstAmount = (subtotal - discountAmount) * (parseFloat(gstRate) / 100);
+      const baseSubtotal = subtotal / (1 + rate);
+      discountAmount = discount ? (baseSubtotal * parseFloat(discount)) / 100 : 0;
+      taxableAmount = baseSubtotal - discountAmount;
+      gstAmount = taxableAmount * rate;
     } else {
-      subtotal = subtotal - discountAmount;
-      gstAmount = subtotal * (parseFloat(gstRate) / 100);
+      taxableAmount = subtotal - discountAmount;
+      gstAmount = taxableAmount * rate;
     }
 
-    const grandTotal = subtotal - discountAmount + gstAmount + serviceChargeAmount;
+    const grandTotal = taxableAmount + gstAmount + serviceChargeAmount;
 
     const receiptContent = `
       <html>
@@ -348,71 +367,98 @@ const Orders = () => {
           <style>
             body {
               font-family: 'Courier New', monospace;
-              font-size: 10px;
-              width: 80mm;
+              font-size: 12px;
+              width: 400px;
               margin: 0;
               padding: 5mm;
-              line-height: 1.4;
+              line-height: 1.5;
             }
             .receipt-container {
-              border: 1px solid #000;
-              padding: 5px;
+              margin: 10px;
+              padding: 0;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             .header {
               text-align: center;
               font-weight: bold;
-              font-size: 12px;
-              margin-bottom: 5px;
+              font-size: 16px;
+              margin-bottom: 10px;
+              color: #2c3e50;
             }
-            .details, .footer {
-              margin: 5px 0;
+            .logo-placeholder {
+              text-align: center;
+              margin-bottom: 5px;
+              font-size: 10px;
+              color: #7f8c8d;
+            }
+            .details {
+              margin-bottom: 10px;
+              font-size: 11px;
+              color: #34495e;
             }
             .details p {
               margin: 2px 0;
-              word-wrap: break-word;
             }
             table {
               width: 100%;
               border-collapse: collapse;
-              margin: 5px 0;
+              margin-bottom: 10px;
             }
             th, td {
-              border: 1px solid #000;
-              padding: 3px;
+              padding: 5px;
               text-align: left;
+              border-bottom: 1px solid #ecf0f1;
             }
             th {
-              background-color: #eee;
+              background-color: #ecf0f1;
+              font-weight: bold;
             }
             .qty { width: 15%; }
-            .item { width: 40%; }
-            .price { width: 25%; text-align: right; }
-            .amount { width: 20%; text-align: right; }
-            .total-table td {
-              text-align: right;
+            .item { width: 50%; word-wrap: break-word; }
+            .price, .amount { width: 17.5%; text-align: right; }
+            .totals {
+              margin-top: 10px;
             }
-            .total-table .label { text-align: left; }
+            .totals p {
+              display: flex;
+              justify-content: space-between;
+              margin: 5px 0;
+              font-size: 12px;
+              color: #34495e;
+            }
+            .totals .grand-total {
+              font-weight: bold;
+              color: #2c3e50;
+              border-top: 2px solid #ecf0f1;
+              padding-top: 5px;
+            }
             .message {
               text-align: center;
               font-style: italic;
-              margin-top: 5px;
+              margin-top: 10px;
+              font-size: 11px;
+              color: #7f8c8d;
             }
-            .divider {
-              border-top: 1px dashed #000;
-              margin: 5px 0;
+            .footer {
+              text-align: center;
+              margin-top: 10px;
+              font-size: 10px;
+              color: #7f8c8d;
+              border-top: 1px dashed #ecf0f1;
+              padding-top: 5px;
             }
           </style>
         </head>
         <body>
           <div class="receipt-container">
-            <div class="header">${restaurantDetails.name.slice(0, 32)}</div>
+            <div class="logo-placeholder">[Restaurant Logo]</div>
+            <div class="header">${restaurantDetails.name}</div>
             <div class="details">
-              <p>Address: ${restaurantDetails.address.slice(0, 64)}</p>
+              <p>Address: ${restaurantDetails.address}</p>
               <p>Phone: ${restaurantDetails.phoneNumber}</p>
               <p>GST: ${restaurantDetails.gst}</p>
               <p>FSSAI: ${restaurantDetails.fssai}</p>
             </div>
-            <div class="divider"></div>
             <div class="details">
               <p>Table No: ${selectedTable}</p>
               <p>Date: ${new Date().toLocaleString()}</p>
@@ -429,7 +475,7 @@ const Orders = () => {
                   (item) => `
                 <tr>
                   <td class="qty">${item.quantity}</td>
-                  <td class="item">${item.name.slice(0, 15)}</td>
+                  <td class="item">${item.name}</td>
                   <td class="price">₹${item.price.toFixed(2)}</td>
                   <td class="amount">₹${(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
@@ -437,41 +483,16 @@ const Orders = () => {
                 )
                 .join('')}
             </table>
-            <table class="total-table">
-              <tr>
-                <td class="label">Subtotal:</td>
-                <td>₹${subtotal.toFixed(2)}</td>
-              </tr>
-              ${discount ? `
-              <tr>
-                <td class="label">Discount (${discount}%):</td>
-                <td>-₹${discountAmount.toFixed(2)}</td>
-              </tr>
-              ` : ''}
-              <tr>
-                <td class="label">Service Charge:</td>
-                <td>₹${serviceChargeAmount.toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td class="label">Taxable Amount:</td>
-                <td>₹${(subtotal - discountAmount).toFixed(2)}</td>
-              </tr>
-              ${gstRate !== '0' ? `
-              <tr>
-                <td class="label">GST (${gstRate}% ${gstType}):</td>
-                <td>₹${gstAmount.toFixed(2)}</td>
-              </tr>
-              ` : ''}
-              <tr>
-                <td class="label">Grand Total:</td>
-                <td>₹${grandTotal.toFixed(2)}</td>
-              </tr>
-            </table>
-            <div class="divider"></div>
-            ${message ? `<div class="message">${message.slice(0, 32)}</div>` : ''}
-            <div class="footer">
-              <p style="text-align: center;">Thank You! Visit Again!</p>
+            <div class="totals">
+              <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
+              ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
+              <p><span>Service Charge:</span><span>₹${serviceChargeAmount.toFixed(2)}</span></p>
+              <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
+              ${gstRate !== '0' ? `<p><span>GST (${gstRate}% ${gstType}):</span><span>₹${gstAmount.toFixed(2)}</span></p>` : ''}
+              <p class="grand-total"><span>Grand Total:</span><span>₹${grandTotal.toFixed(2)}</span></p>
             </div>
+            ${message ? `<div class="message">${message}</div>` : ''}
+            <div class="footer">Thank You! Visit Again!</div>
           </div>
         </body>
       </html>
@@ -517,77 +538,107 @@ const Orders = () => {
       });
       const { items, subtotal, discount, serviceCharge, gstRate, gstType, gstAmount, total, message } = res.data;
 
+      const discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
+      const taxableAmount = subtotal - discountAmount;
+
       const receiptContent = `
         <html>
           <head>
             <style>
               body {
                 font-family: 'Courier New', monospace;
-                font-size: 10px;
-                width: 80mm;
+                font-size: 12px;
+                width: 400px;
                 margin: 0;
                 padding: 5mm;
-                line-height: 1.4;
+                line-height: 1.5;
               }
               .receipt-container {
-                border: 1px solid #000;
-                padding: 5px;
+                margin: 10px;
+                padding: 0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               }
               .header {
                 text-align: center;
                 font-weight: bold;
-                font-size: 12px;
-                margin-bottom: 5px;
+                font-size: 16px;
+                margin-bottom: 10px;
+                color: #2c3e50;
               }
-              .details, .footer {
-                margin: 5px 0;
+              .logo-placeholder {
+                text-align: center;
+                margin-bottom: 5px;
+                font-size: 10px;
+                color: #7f8c8d;
+              }
+              .details {
+                margin-bottom: 10px;
+                font-size: 11px;
+                color: #34495e;
               }
               .details p {
                 margin: 2px 0;
-                word-wrap: break-word;
               }
               table {
                 width: 100%;
                 border-collapse: collapse;
-                margin: 5px 0;
+                margin-bottom: 10px;
               }
               th, td {
-                border: 1px solid #000;
-                padding: 3px;
+                padding: 5px;
                 text-align: left;
+                border-bottom: 1px solid #ecf0f1;
               }
               th {
-                background-color: #eee;
+                background-color: #ecf0f1;
+                font-weight: bold;
               }
               .qty { width: 15%; }
-              .item { width: 40%; }
-              .price { width: 25%; text-align: right; }
-              .amount { width: 20%; text-align: right; }
-              .total-table td {
-                text-align: right;
+              .item { width: 50%; word-wrap: break-word; }
+              .price, .amount { width: 17.5%; text-align: right; }
+              .totals {
+                margin-top: 10px;
               }
-              .total-table .label { text-align: left; }
+              .totals p {
+                display: flex;
+                justify-content: space-between;
+                margin: 5px 0;
+                font-size: 12px;
+                color: #34495e;
+              }
+              .totals .grand-total {
+                font-weight: bold;
+                color: #2c3e50;
+                border-top: 2px solid #ecf0f1;
+                padding-top: 5px;
+              }
               .message {
                 text-align: center;
                 font-style: italic;
-                margin-top: 5px;
+                margin-top: 10px;
+                font-size: 11px;
+                color: #7f8c8d;
               }
-              .divider {
-                border-top: 1px dashed #000;
-                margin: 5px 0;
+              .footer {
+                text-align: center;
+                margin-top: 10px;
+                font-size: 10px;
+                color: #7f8c8d;
+                border-top: 1px dashed #ecf0f1;
+                padding-top: 5px;
               }
             </style>
           </head>
           <body>
             <div class="receipt-container">
-              <div class="header">${restaurantDetails.name.slice(0, 32)}</div>
+              <div class="logo-placeholder">[Restaurant Logo]</div>
+              <div class="header">${restaurantDetails.name}</div>
               <div class="details">
-                <p>Address: ${restaurantDetails.address.slice(0, 64)}</p>
+                <p>Address: ${restaurantDetails.address}</p>
                 <p>Phone: ${restaurantDetails.phoneNumber}</p>
                 <p>GST: ${restaurantDetails.gst}</p>
                 <p>FSSAI: ${restaurantDetails.fssai}</p>
               </div>
-              <div class="divider"></div>
               <div class="details">
                 <p>Table No: ${tableNo}</p>
                 <p>Date: ${new Date().toLocaleString()}</p>
@@ -604,7 +655,7 @@ const Orders = () => {
                     (item) => `
                   <tr>
                     <td class="qty">${item.quantity}</td>
-                    <td class="item">${item.name.slice(0, 15)}</td>
+                    <td class="item">${item.name}</td>
                     <td class="price">₹${item.price.toFixed(2)}</td>
                     <td class="amount">₹${(item.price * item.quantity).toFixed(2)}</td>
                   </tr>
@@ -612,41 +663,16 @@ const Orders = () => {
                   )
                   .join('')}
               </table>
-              <table class="total-table">
-                <tr>
-                  <td class="label">Subtotal:</td>
-                  <td>₹${subtotal.toFixed(2)}</td>
-                </tr>
-                ${discount ? `
-                <tr>
-                  <td class="label">Discount (${discount}%):</td>
-                  <td>-₹${discount.toFixed(2)}</td>
-                </tr>
-                ` : ''}
-                <tr>
-                  <td class="label">Service Charge:</td>
-                  <td>₹${serviceCharge.toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td class="label">Taxable Amount:</td>
-                  <td>₹${(subtotal - discount).toFixed(2)}</td>
-                </tr>
-                ${gstRate !== 0 ? `
-                <tr>
-                  <td class="label">GST (${gstRate}% ${gstType}):</td>
-                  <td>₹${gstAmount.toFixed(2)}</td>
-                </tr>
-                ` : ''}
-                <tr>
-                  <td class="label">Grand Total:</td>
-                  <td>₹${total.toFixed(2)}</td>
-                </tr>
-              </table>
-              <div class="divider"></div>
-              ${message ? `<div class="message">${message.slice(0, 32)}</div>` : ''}
-              <div class="footer">
-                <p style="text-align: center;">Thank You! Visit Again!</p>
+              <div class="totals">
+                <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
+                ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
+                <p><span>Service Charge:</span><span>₹${serviceCharge.toFixed(2)}</span></p>
+                <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
+                ${gstRate !== '0' ? `<p><span>GST (${gstRate}% ${gstType}):</span><span>₹${gstAmount.toFixed(2)}</span></p>` : ''}
+                <p class="grand-total"><span>Grand Total:</span><span>₹${total.toFixed(2)}</span></p>
               </div>
+              ${message ? `<div class="message">${message}</div>` : ''}
+              <div class="footer">Thank You! Visit Again!</div>
             </div>
           </body>
         </html>
@@ -684,32 +710,35 @@ const Orders = () => {
       return acc;
     }, []);
 
-    let subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     let discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
-    let serviceChargeAmount = parseFloat(serviceCharge) || 0;
+    const serviceChargeAmount = parseFloat(serviceCharge) || 0;
     let gstAmount = 0;
+    let taxableAmount = 0;
+    const rate = parseFloat(gstRate) / 100;
 
     if (gstType === 'inclusive') {
-      subtotal = subtotal / (1 + parseFloat(gstRate) / 100);
-      discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
-      gstAmount = (subtotal - discountAmount) * (parseFloat(gstRate) / 100);
+      const baseSubtotal = subtotal / (1 + rate);
+      discountAmount = discount ? (baseSubtotal * parseFloat(discount)) / 100 : 0;
+      taxableAmount = baseSubtotal - discountAmount;
+      gstAmount = taxableAmount * rate;
     } else {
-      subtotal = subtotal - discountAmount;
-      gstAmount = subtotal * (parseFloat(gstRate) / 100);
+      taxableAmount = subtotal - discountAmount;
+      gstAmount = taxableAmount * rate;
     }
 
-    const grandTotal = subtotal - discountAmount + gstAmount + serviceChargeAmount;
+    const grandTotal = taxableAmount + gstAmount + serviceChargeAmount;
 
     return `
       <div class="receipt-container">
-        <div class="header">${restaurantDetails.name.slice(0, 32)}</div>
+        <div class="logo-placeholder">[Restaurant Logo]</div>
+        <div class="header">${restaurantDetails.name}</div>
         <div class="details">
-          <p>Address: ${restaurantDetails.address.slice(0, 64)}</p>
+          <p>Address: ${restaurantDetails.address}</p>
           <p>Phone: ${restaurantDetails.phoneNumber}</p>
           <p>GST: ${restaurantDetails.gst}</p>
           <p>FSSAI: ${restaurantDetails.fssai}</p>
         </div>
-        <div class="divider"></div>
         <div class="details">
           <p>Table No: ${selectedTable}</p>
           <p>Date: ${new Date().toLocaleString()}</p>
@@ -726,7 +755,7 @@ const Orders = () => {
               (item) => `
             <tr>
               <td class="qty">${item.quantity}</td>
-              <td class="item">${item.name.slice(0, 15)}</td>
+              <td class="item">${item.name}</td>
               <td class="price">₹${item.price.toFixed(2)}</td>
               <td class="amount">₹${(item.price * item.quantity).toFixed(2)}</td>
             </tr>
@@ -734,41 +763,16 @@ const Orders = () => {
             )
             .join('')}
         </table>
-        <table class="total-table">
-          <tr>
-            <td class="label">Subtotal:</td>
-            <td>₹${subtotal.toFixed(2)}</td>
-          </tr>
-          ${discount ? `
-          <tr>
-            <td class="label">Discount (${discount}%):</td>
-            <td>-₹${discountAmount.toFixed(2)}</td>
-          </tr>
-          ` : ''}
-          <tr>
-            <td class="label">Service Charge:</td>
-            <td>₹${serviceChargeAmount.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td class="label">Taxable Amount:</td>
-            <td>₹${(subtotal - discountAmount).toFixed(2)}</td>
-          </tr>
-          ${gstRate !== '0' ? `
-          <tr>
-            <td class="label">GST (${gstRate}% ${gstType}):</td>
-            <td>₹${gstAmount.toFixed(2)}</td>
-          </tr>
-          ` : ''}
-          <tr>
-            <td class="label">Grand Total:</td>
-            <td>₹${grandTotal.toFixed(2)}</td>
-          </tr>
-        </table>
-        <div class="divider"></div>
-        ${message ? `<div class="message">${message.slice(0, 32)}</div>` : ''}
-        <div class="footer">
-          <p style="text-align: center;">Thank You! Visit Again!</p>
+        <div class="totals">
+          <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
+          ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
+          <p><span>Service Charge:</span><span>₹${serviceChargeAmount.toFixed(2)}</span></p>
+          <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
+          ${gstRate !== '0' ? `<p><span>GST (${gstRate}% ${gstType}):</span><span>₹${gstAmount.toFixed(2)}</span></p>` : ''}
+          <p class="grand-total"><span>Grand Total:</span><span>₹${grandTotal.toFixed(2)}</span></p>
         </div>
+        ${message ? `<div class="message">${message}</div>` : ''}
+        <div class="footer">Thank You! Visit Again!</div>
       </div>
     `;
   };
@@ -788,15 +792,23 @@ const Orders = () => {
   return (
     <div className="orders-container">
       <Sidebar />
-      <div class="orders-content">
+      <div className="orders-content">
         {loading && <LoadingSpinner />}
-        <div class="orders-header">
+        <div className="orders-header">
           <h2>Orders</h2>
-          <Link to="/take-order" class="take-order-btn">
-            Take Order
-          </Link>
+          <div className="orders-header-buttons">
+            <Link to="/take-order" className="take-order-btn">
+              Take Order
+            </Link>
+            <button
+              className={`disable-submit-btn ${isSubmitDisabled ? '' : 'enabled'}`}
+              onClick={handleToggleSubmitDisabled}
+            >
+              {isSubmitDisabled ? 'Enable Submit' : 'Disable Submit'}
+            </button>
+          </div>
         </div>
-        <div class="order-table-container">
+        <div className="order-table-container">
           <OrderTable
             title="Live Orders"
             orders={liveOrders.slice(0, 5)}
@@ -806,17 +818,17 @@ const Orders = () => {
           />
         </div>
 
-        <div class="recurring-receipt-container">
-          <div class="recurring-orders">
-            <div class="order-table-container">
+        <div className="recurring-receipt-container">
+          <div className="recurring-orders">
+            <div className="order-table-container">
               <OrderTable title="Recurring Orders" orders={recurringOrders.slice(0, 5)} onDelete={handleDelete} />
             </div>
           </div>
 
-          <div class="receipt-section">
-            <div class="receipt-form-container">
-              <h3></h3>
-              <div class="receipt-form">
+          <div className="receipt-section">
+            <div className="receipt-form-container">
+              <h3>Receipt Settings</h3>
+              <div className="receipt-form">
                 <select value={selectedTable} onChange={(e) => setSelectedTable(e.target.value)}>
                   <option value="">Select Table</option>
                   {uniqueTables.map((tableNo) => (
@@ -831,7 +843,7 @@ const Orders = () => {
                   <option value="12">12% GST</option>
                   <option value="18">18% GST</option>
                 </select>
-                <div class="gst-type">
+                <div className="gst-type">
                   <label>
                     <input
                       type="radio"
@@ -874,20 +886,20 @@ const Orders = () => {
                 <button onClick={handlePrintCustomerReceipt}>Print Receipt</button>
               </div>
             </div>
-            <div class="receipt-preview">
+            <div className="receipt-preview">
               <h3>Receipt Preview</h3>
               <div
-                class="receipt-preview-content"
+                className="receipt-preview-content"
                 dangerouslySetInnerHTML={{ __html: getReceiptPreview() }}
               />
             </div>
           </div>
         </div>
 
-        <div class="past-orders-container">
-          <div class="past-orders-header">
+        <div className="past-orders-container">
+          <div className="past-orders-header">
             <h3>Past Orders</h3>
-            <div class="date-filter-container">
+            <div className="date-filter-container">
               <label htmlFor="past-order-date-filter">Filter by Date:</label>
               <input
                 id="past-order-date-filter"
@@ -897,7 +909,7 @@ const Orders = () => {
               />
             </div>
           </div>
-          <div class="order-table-container past-orders-table">
+          <div className="order-table-container past-orders-table">
             <OrderTable
               title=""
               orders={filteredPastOrders.slice(0, visiblePastOrders)}
@@ -908,12 +920,12 @@ const Orders = () => {
             />
           </div>
           {filteredPastOrders.length > visiblePastOrders && (
-            <button class="see-more-button" onClick={handleShowMore}>
+            <button className="see-more-button" onClick={handleShowMore}>
               See More
             </button>
           )}
         </div>
-        <footer class="page-footer">Powered by SAE. All rights reserved.</footer>
+        <footer className="page-footer">Powered by SAE. All rights reserved.</footer>
       </div>
     </div>
   );

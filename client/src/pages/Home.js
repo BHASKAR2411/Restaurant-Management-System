@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { useNavigate } from "react-router-dom"  // Added import for useNavigate
+import { useNavigate } from "react-router-dom"
 import LoadingSpinner from "../components/LoadingSpinner"
 import { setTableData, getTableData } from "../utils/storage"
 import "../styles/Home.css"
@@ -10,7 +10,7 @@ import "../styles/Home.css"
 const Home = () => {
   const [restaurant, setRestaurant] = useState(null)
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()  // Added useNavigate hook
+  const navigate = useNavigate()
 
   // Extract tableNo and restaurantId from URL or local storage
   const urlParams = new URLSearchParams(window.location.search)
@@ -56,7 +56,7 @@ const Home = () => {
   }
 
   const navigateTo = (path) => {
-    navigate(`${path}?table=${tableNo}&restaurant=${restaurantId}`)  // Updated to use navigate instead of window.location.href
+    navigate(`${path}?table=${tableNo}&restaurant=${restaurantId}`)
   }
 
   return (
@@ -81,13 +81,13 @@ const Home = () => {
         </div>
         <div className="feature-cards">
           <button className="feature-card" onClick={() => navigateTo("/menu")}>
-            <h3>Browse Menu</h3>
+            <h3>🍽️ Browse Menu</h3>
           </button>
           <button className="feature-card" onClick={() => navigateTo("/payment")}>
-            <h3>Pay Bill</h3>
+            <h3>💳 Pay Bill</h3>
           </button>
           <button className="feature-card" onClick={() => navigateTo("/review")}>
-            <h3>Leave Review</h3>
+            <h3>⭐ Leave Review</h3>
           </button>
         </div>
         <footer className="page-footer">

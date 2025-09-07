@@ -10,10 +10,12 @@ exports.createOrder = async (req, res) => {
     if (!resolvedRestaurantId || isNaN(resolvedRestaurantId) || Number(resolvedRestaurantId) <= 0) {
       return res.status(400).json({ message: 'Restaurant ID is required and must be a valid number' });
     }
-    // Validate restaurantId exists in Users table
     const user = await User.findByPk(Number(resolvedRestaurantId));
     if (!user) {
       return res.status(400).json({ message: 'Invalid restaurant ID: Restaurant not found' });
+    }
+    if (user.isSubmitDisabled) {
+      return res.status(403).json({ message: 'Order submission is currently disabled' });
     }
     if (!tableNo || !Number.isInteger(tableNo) || tableNo < 0) {
       return res.status(400).json({ message: 'Invalid table number' });
@@ -275,6 +277,40 @@ exports.reprintReceipt = async (req, res) => {
     res.json(orders[0].receiptDetails);
   } catch (error) {
     console.error('Error fetching receipt:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.toggleSubmitDisabled = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    user.isSubmitDisabled = !user.isSubmitDisabled;
+    await user.save();
+    
+    global.io.emit('submitDisabledUpdate', {
+      restaurantId: req.user.id,
+      isSubmitDisabled: user.isSubmitDisabled,
+    });
+    
+    res.json({ isSubmitDisabled: user.isSubmitDisabled });
+  } catch (error) {
+    console.error('Error toggling submit disabled state:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.getSubmitDisabledStatus = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.query.restaurantId);
+    if (!user) {
+      return res.status(404).json({ message: 'Restaurant not found' });
+    }
+    res.json({ isSubmitDisabled: user.isSubmitDisabled });
+  } catch (error) {
+    console.error('Error fetching submit disabled status:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

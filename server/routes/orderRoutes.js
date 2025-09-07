@@ -1,4 +1,3 @@
-// server/routes/orderRoutes.js
 const express = require('express');
 const {
   createOrder,
@@ -11,6 +10,8 @@ const {
   deleteOrder,
   getRestaurantDetails,
   reprintReceipt,
+  toggleSubmitDisabled,
+  getSubmitDisabledStatus,
 } = require('../controllers/orderController');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -52,5 +53,7 @@ router.get('/stats', auth, getOrderStats);
 router.delete('/:id', auth, deleteOrder);
 router.get('/restaurant/details', auth, getRestaurantDetails);
 router.get('/reprint/:tableNo', auth, reprintReceipt);
+router.put('/toggle-submit-disabled', auth, toggleSubmitDisabled);
+router.get('/submit-disabled', getSubmitDisabledStatus);
 
 module.exports = router;

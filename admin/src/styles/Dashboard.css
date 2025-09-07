@@ -9,6 +9,19 @@
   background: url('../assets/header5.png') no-repeat center center fixed;
   background-size: cover;
   min-height: 100vh;
+  position: relative;
+}
+
+.today-date {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: #34495e;
+  font-weight: bold;
+  font-size: 1rem;
 }
 
 .dashboard-content h1 {
@@ -28,7 +41,7 @@
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
+  max-width: 800px;
 }
 
 .filter-group {
@@ -47,7 +60,6 @@
   flex: 1;
 }
 
-.analytics-controls input[type="date"],
 .analytics-controls select {
   padding: 0.5rem;
   border: 1px solid #55c1ef;
@@ -59,16 +71,19 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.analytics-controls input[type="date"]:hover,
 .analytics-controls select:hover {
   border-color: #1d4999;
 }
 
-.analytics-controls input[type="date"]:focus,
 .analytics-controls select:focus {
   outline: none;
   border-color: #1d4999;
   box-shadow: 0 0 5px rgba(29, 73, 153, 0.3);
+}
+
+.analytics-controls select:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
 }
 
 .earnings-figures {
@@ -96,6 +111,13 @@
   font-size: 1.2rem;
   color: #1d4999;
   font-weight: bold;
+}
+
+.figure-card small {
+  display: block;
+  font-size: 0.8rem;
+  color: #34495e;
+  margin-top: 0.25rem;
 }
 
 .charts-container {
@@ -181,5 +203,12 @@
   .view-orders-btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .today-date {
+    font-size: 0.9rem;
+    top: 10px;
+    right: 10px;
+    padding: 0.25rem 0.5rem;
   }
 }

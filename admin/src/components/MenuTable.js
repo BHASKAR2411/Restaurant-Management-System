@@ -12,6 +12,7 @@ const MenuTable = ({ menuItems, onDelete, onToggleEnable, onEdit }) => {
             <th>ID</th>
             <th>Category</th>
             <th>Name</th>
+            <th>Description</th>
             <th>Veg/Non-Veg</th>
             <th>Full Price</th>
             <th>Half Price</th>
@@ -22,7 +23,7 @@ const MenuTable = ({ menuItems, onDelete, onToggleEnable, onEdit }) => {
         <tbody>
           {menuItems.length === 0 ? (
             <tr>
-              <td colSpan={8}>No menu items</td>
+              <td colSpan={9}>No menu items</td>
             </tr>
           ) : (
             menuItems.map((item) => (
@@ -30,6 +31,7 @@ const MenuTable = ({ menuItems, onDelete, onToggleEnable, onEdit }) => {
                 <td>{item.id}</td>
                 <td>{item.category}</td>
                 <td>{item.name}</td>
+                <td>{item.description || '-'}</td>
                 <td>{item.isVeg ? 'Veg' : 'Non-Veg'}</td>
                 <td>₹{item.price.toFixed(2)}</td>
                 <td>{item.hasHalf ? `₹${item.halfPrice.toFixed(2)}` : '-'}</td>

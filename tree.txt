@@ -1,0 +1,149 @@
+Restaurant_management_system/
+├─ .vscode/
+│  └─ settings.json
+├─ admin/
+│  ├─ public/
+│  │  ├─ favicon.ico
+│  │  ├─ index.html
+│  │  ├─ logo.png
+│  │  ├─ logo512.png
+│  │  ├─ manifest.json
+│  │  └─ robots.txt
+│  ├─ src/
+│  │  ├─ assets/
+│  │  │  ├─ header5.png
+│  │  │  ├─ logo.png
+│  │  │  ├─ s1.png
+│  │  │  ├─ s2.png
+│  │  │  ├─ s3.png
+│  │  │  └─ sae.png
+│  │  ├─ components/
+│  │  │  ├─ LoadingSpinner.js
+│  │  │  ├─ MenuItem.js
+│  │  │  ├─ MenuTable.js
+│  │  │  ├─ OrderTable.js
+│  │  │  ├─ ReviewTable.js
+│  │  │  ├─ Sidebar.js
+│  │  │  └─ VerifyOtp.js
+│  │  ├─ context/
+│  │  │  └─ AuthContext.js
+│  │  ├─ pages/
+│  │  │  ├─ Account.js
+│  │  │  ├─ Dashboard.js
+│  │  │  ├─ ForgotPassword.js
+│  │  │  ├─ Login.js
+│  │  │  ├─ Menu.js
+│  │  │  ├─ Orders.js
+│  │  │  ├─ Plans.js
+│  │  │  ├─ QRCode.js
+│  │  │  ├─ ResetPassword.js
+│  │  │  ├─ Reviews.js
+│  │  │  ├─ Signup.js
+│  │  │  └─ TakeOrder.js
+│  │  ├─ styles/
+│  │  │  ├─ Account.css
+│  │  │  ├─ App.css
+│  │  │  ├─ Dashboard.css
+│  │  │  ├─ ForgotPassword.css
+│  │  │  ├─ LoadingSpinner.css
+│  │  │  ├─ Login.css
+│  │  │  ├─ Menu.css
+│  │  │  ├─ MenuItem.css
+│  │  │  ├─ Orders.css
+│  │  │  ├─ Plans.css
+│  │  │  ├─ QRCode.css
+│  │  │  ├─ ResetPassword.css
+│  │  │  ├─ Reviews.css
+│  │  │  ├─ Sidebar.css
+│  │  │  ├─ Signup.css
+│  │  │  └─ TakeOrder.css
+│  │  ├─ App.js
+│  │  ├─ index.css
+│  │  └─ index.js
+│  ├─ .env
+│  ├─ package-lock.json
+│  ├─ package.json
+│  └─ README.md
+├─ client/
+│  ├─ public/
+│  │  ├─ favicon.ico
+│  │  ├─ index.html
+│  │  ├─ logo192.png
+│  │  ├─ logo512.png
+│  │  ├─ manifest.json
+│  │  └─ robots.txt
+│  ├─ src/
+│  │  ├─ assets/
+│  │  │  └─ header5.png
+│  │  ├─ components/
+│  │  │  ├─ LoadingSpinner.js
+│  │  │  ├─ MenuItem.js
+│  │  │  ├─ Sidebar.js
+│  │  │  └─ ToastContainer.js
+│  │  ├─ pages/
+│  │  │  ├─ Home.js
+│  │  │  ├─ Menu.js
+│  │  │  ├─ Payment.js
+│  │  │  └─ Review.js
+│  │  ├─ styles/
+│  │  │  ├─ App.css
+│  │  │  ├─ Home.css
+│  │  │  ├─ LoadingSpinner.css
+│  │  │  ├─ Menu.css
+│  │  │  ├─ Payment.css
+│  │  │  ├─ Review.css
+│  │  │  ├─ Sidebar.css
+│  │  │  └─ StarRating.css
+│  │  ├─ utils/
+│  │  │  └─ storage.js
+│  │  ├─ App.js
+│  │  ├─ index.css
+│  │  ├─ index.js
+│  │  └─ tailwind.config.ts
+│  ├─ .env
+│  ├─ package-lock.json
+│  ├─ package.json
+│  └─ README.md
+├─ server/
+│  ├─ config/
+│  │  ├─ config.js
+│  │  ├─ db.js
+│  │  └─ s3.js
+│  ├─ controllers/
+│  │  ├─ menuController.js
+│  │  ├─ orderController.js
+│  │  ├─ plancontroller.js
+│  │  ├─ reviewController.js
+│  │  ├─ tableController.js
+│  │  └─ userController.js
+│  ├─ middleware/
+│  │  ├─ auth.js
+│  │  ├─ multer.js
+│  │  ├─ plancheck.js
+│  │  └─ validate.js
+│  ├─ migrations/
+│  │  ├─ 20250624025200-add-fields-to-menu.js
+│  │  └─ add-half-fields-to-menu.js
+│  ├─ models/
+│  │  ├─ Menu.js
+│  │  ├─ Order.js
+│  │  ├─ Review.js
+│  │  ├─ Table.js
+│  │  └─ User.js
+│  ├─ routes/
+│  │  ├─ analyticsRoutes.js
+│  │  ├─ menuRoutes.js
+│  │  ├─ orderRoutes.js
+│  │  ├─ planroutes.js
+│  │  ├─ reviewRoutes.js
+│  │  ├─ tableRoutes.js
+│  │  └─ userRoutes.js
+│  ├─ utils/
+│  │  ├─ otp.js
+│  │  ├─ s3Upload.js
+│  │  └─ sendEmail.js
+│  ├─ .env
+│  ├─ package-lock.json
+│  ├─ package.json
+│  └─ server.js
+└─ .gitignore
