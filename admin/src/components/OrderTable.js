@@ -1,4 +1,3 @@
-// admin-frontend/src/components/OrderTable.js
 import React from 'react';
 import '../styles/Orders.css';
 
@@ -49,7 +48,7 @@ const OrderTable = ({ orders, title, onComplete, onDelete, onPrintKitchenReceipt
                       <button
                         onClick={() => {
                           if (window.confirm('Are you sure you want to reprint this receipt?')) {
-                            onReprint(order.tableNo);
+                            onReprint(order.id); // Changed from order.tableNo to order.id
                           }
                         }}
                         style={{ marginRight: '5px' }}

@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { toast } from "react-toastify"
-import { useNavigate } from "react-router-dom"  // Added import for useNavigate
 import LoadingSpinner from "../components/LoadingSpinner"
 import { getTableData } from "../utils/storage"
 import "../styles/Payment.css"
@@ -13,7 +12,7 @@ const Payment = () => {
   const [amount, setAmount] = useState("")
   const [upiId, setUpiId] = useState("")
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()  // Added useNavigate hook
+  const [restaurant, setRestaurant] = useState(null)
   const { tableNo, restaurantId } = getTableData()
 
   useEffect(() => {
@@ -27,6 +26,7 @@ const Payment = () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${restaurantId}`)
         setUpiId(res.data.upiId)
+        setRestaurant(res.data)
         setLoading(false)
       } catch (error) {
         console.error("Error fetching UPI ID:", error)
@@ -51,10 +51,6 @@ const Payment = () => {
     window.location.href = upiLink
   }
 
-  const navigateToHome = () => {
-    navigate(`/?table=${tableNo}&restaurant=${restaurantId}`)  // Updated to use navigate instead of window.location.href
-  }
-
   if (!restaurantId) {
     return <div className="error-container">Error: Invalid restaurant</div>
   }
@@ -63,12 +59,22 @@ const Payment = () => {
     <div className="payment-container">
       {loading && <LoadingSpinner />}
       <div className="payment-header">
-        <button className="back-button" onClick={navigateToHome}>
-          ← Back
-        </button>
-        <h2>Pay Your Bill</h2>
+        <div className="restaurant-info">
+          {restaurant?.profilePicture ? (
+            <img
+              src={restaurant.profilePicture}
+              alt={`${restaurant.restaurantName} logo`}
+              className="restaurant-logo"
+            />
+          ) : (
+            <div className="restaurant-logo-placeholder">
+              {restaurant?.restaurantName[0] || 'R'}
+            </div>
+          )}
+          <span className="restaurant-name">{restaurant?.restaurantName || 'Restaurant'}</span>
+        </div>
+        {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       </div>
-      {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       <div className="payment-content">
         <div className="payment-card">
           <div className="payment-icon">₹</div>

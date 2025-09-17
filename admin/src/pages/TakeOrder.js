@@ -1,4 +1,3 @@
-// admin-frontend/src/pages/TakeOrder.js
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -133,8 +132,8 @@ const TakeOrder = () => {
 
     setLoading(true);
     try {
-      console.log('Submitting order payload:', JSON.stringify(payload, null, 2));
-      await axios.post(`${process.env.REACT_APP_API_URL}/orders`, payload, {
+      console.log('Submitting admin order payload:', JSON.stringify(payload, null, 2));
+      await axios.post(`${process.env.REACT_APP_API_URL}/orders/admin`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Order placed successfully');
@@ -142,7 +141,7 @@ const TakeOrder = () => {
       navigate('/orders');
     } catch (error) {
       const errorDetails = error.response?.data || error.message;
-      console.error('Error placing order:', errorDetails);
+      console.error('Error placing admin order:', errorDetails);
       const errorMessage = errorDetails.message || 'Failed to place order';
       if (errorDetails.errors) {
         toast.error(`${errorMessage}: ${errorDetails.errors.join(', ')}`);

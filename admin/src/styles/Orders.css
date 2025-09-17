@@ -71,8 +71,14 @@
   margin-bottom: 2rem;
 }
 
+.order-table-container.recurring-orders-table {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
 .order-table-container.past-orders-table {
   max-height: 880px;
+  overflow-y: auto;
 }
 
 .order-table {
@@ -261,13 +267,25 @@
   font-weight: bold;
 }
 
-.receipt-preview-content .qty { width: 15%; }
-.receipt-preview-content .item { width: 50%; word-wrap: break-word; }
-.receipt-preview-content .price { width: 17.5%; text-align: right; }
-.receipt-preview-content .amount { width: 17.5%; text-align: right; }
+.receipt-preview-content .qty {
+  width: 15%;
+}
+
+.receipt-preview-content .item {
+  width: 50%;
+  word-wrap: break-word;
+}
+
+.receipt-preview-content .price,
+.receipt-preview-content .amount {
+  width: 17.5%;
+  text-align: right;
+}
+
 .receipt-preview-content .totals {
   margin-top: 10px;
 }
+
 .receipt-preview-content .totals p {
   display: flex;
   justify-content: space-between;
@@ -275,12 +293,14 @@
   font-size: 12px;
   color: #34495e;
 }
+
 .receipt-preview-content .totals .grand-total {
   font-weight: bold;
   color: #2c3e50;
   border-top: 2px solid #ecf0f1;
   padding-top: 5px;
 }
+
 .receipt-preview-content .message {
   text-align: center;
   font-style: italic;
@@ -288,6 +308,7 @@
   font-size: 11px;
   color: #7f8c8d;
 }
+
 .receipt-preview-content .footer {
   text-align: center;
   margin-top: 10px;
@@ -309,8 +330,8 @@
 
 .past-orders-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
@@ -344,7 +365,6 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: border-color 0.3s, box-shadow 0.3s;
-  position: relative;
 }
 
 .date-filter-container input[type="date"]::-webkit-calendar-picker-indicator {
@@ -360,6 +380,103 @@
   outline: none;
   border-color: #1d4999;
   box-shadow: 0 0 5px rgba(29, 73, 153, 0.3);
+}
+
+.export-btn {
+  padding: 0.5rem 1rem;
+  background: #55c1ef;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.export-btn:hover {
+  background: #1d4999;
+}
+
+.export-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-content h3 {
+  color: #34495e;
+  margin-bottom: 1rem;
+}
+
+.modal-content select,
+.modal-content input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.months-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.months-selection label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.custom-date {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.custom-date label {
+  color: #34495e;
+  font-size: 0.9rem;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-content button {
+  padding: 0.75rem;
+  background: #55c1ef;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+  flex: 1;
+}
+
+.modal-content button:hover {
+  background: #1d4999;
 }
 
 .see-more-button {
@@ -402,7 +519,8 @@
     width: 100%;
   }
 
-  .take-order-btn, .disable-submit-btn {
+  .take-order-btn,
+  .disable-submit-btn {
     width: 100%;
     text-align: center;
   }
@@ -419,6 +537,39 @@
   .receipt-preview {
     width: 100%;
     max-height: 500px;
+  }
+
+  .order-table-container {
+    max-height: 240px;
+  }
+
+  .order-table-container.recurring-orders-table {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .order-table-container.past-orders-table {
+    max-height: 600px;
+  }
+
+  .past-orders-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .date-filter-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .export-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .months-selection {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -451,5 +602,27 @@
 
   .receipt-preview-content .header {
     font-size: 14px;
+  }
+
+  .order-table-container {
+    max-height: 240px;
+  }
+
+  .order-table-container.recurring-orders-table {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+
+  .order-table-container.past-orders-table {
+    max-height: 500px;
+  }
+
+  .modal-content {
+    padding: 1rem;
+    width: 300px;
+  }
+
+  .months-selection {
+    grid-template-columns: 1fr;
   }
 }

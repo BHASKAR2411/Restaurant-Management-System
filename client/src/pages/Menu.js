@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import MenuItem from '../components/MenuItem';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -19,7 +18,8 @@ const Menu = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('default');
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
-  const navigate = useNavigate();
+  const [isOrderSummaryExpanded, setIsOrderSummaryExpanded] = useState(false);
+  const [restaurant, setRestaurant] = useState(null);
 
   // Extract table and restaurant ID from URL or storage
   const urlParams = new URLSearchParams(window.location.search);
@@ -34,7 +34,7 @@ const Menu = () => {
 
   restaurantId = Number(restaurantId);
 
-  // Effect for fetching menu and setting up WebSocket
+  // Effect for fetching menu, restaurant details, and setting up WebSocket
   useEffect(() => {
     if (tableFromUrl && restaurantFromUrl) {
       setTableData(tableFromUrl, restaurantFromUrl);
@@ -50,12 +50,14 @@ const Menu = () => {
 
     const fetchMenuAndStatus = async () => {
       try {
-        const [menuRes, submitDisabledRes] = await Promise.all([
+        const [menuRes, submitDisabledRes, restaurantRes] = await Promise.all([
           axios.get(`${process.env.REACT_APP_API_URL}/menu?restaurantId=${restaurantId}`),
           axios.get(`${process.env.REACT_APP_API_URL}/orders/submit-disabled?restaurantId=${restaurantId}`),
+          axios.get(`${process.env.REACT_APP_API_URL}/users/${restaurantId}`)
         ]);
         setMenuItems(menuRes.data);
         setIsSubmitDisabled(submitDisabledRes.data.isSubmitDisabled);
+        setRestaurant(restaurantRes.data);
         const initialExpanded = {};
         menuRes.data.forEach((item) => {
           if (initialExpanded[item.category] === undefined) {
@@ -151,6 +153,11 @@ const Menu = () => {
     }));
   };
 
+  // Toggle order summary expansion
+  const toggleOrderSummary = () => {
+    setIsOrderSummaryExpanded((prev) => !prev);
+  };
+
   // Submit order
   const handleSubmit = async () => {
     if (selectedItems.length === 0) {
@@ -200,11 +207,6 @@ const Menu = () => {
     setLoading(false);
   };
 
-  // Navigate back to home
-  const navigateToHome = () => {
-    navigate(`/?table=${tableNo}&restaurant=${restaurantId}`);
-  };
-
   // Filter and sort menu items
   const filteredAndSortedItems = menuItems
     .filter((item) => {
@@ -246,12 +248,22 @@ const Menu = () => {
   return (
     <div className="menu-container">
       <div className="menu-header">
-        <button className="back-button" onClick={navigateToHome}>
-          ← Back
-        </button>
-        <h2>Our Menu</h2>
+        <div className="restaurant-info">
+          {restaurant?.profilePicture ? (
+            <img
+              src={restaurant.profilePicture}
+              alt={`${restaurant.restaurantName} logo`}
+              className="restaurant-logo"
+            />
+          ) : (
+            <div className="restaurant-logo-placeholder">
+              {restaurant?.restaurantName[0] || 'R'}
+            </div>
+          )}
+          <span className="restaurant-name">{restaurant?.restaurantName || 'Restaurant'}</span>
+        </div>
+        {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       </div>
-      {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       <div className="menu-controls">
         <div className="controls-card">
           <div className="filter-group">
@@ -294,7 +306,7 @@ const Menu = () => {
               <div key={category} className="menu-category">
                 <h3 className="category-title" onClick={() => toggleCategory(category)}>
                   {category}
-                  <span className="toggle-icon">{expandedCategories[category] ? '▲' : '▼'}</span>
+                  <span className="toggle-icon">{expandedCategories[category] ? '▼' : '▲'}</span>
                 </h3>
                 {expandedCategories[category] && (
                   <ul>
@@ -335,23 +347,30 @@ const Menu = () => {
         </div>
         {selectedItems.length > 0 && (
           <div className="order-summary sticky">
-            <h4>Selected Items: {selectedItems.reduce((sum, item) => sum + (item.quantity || 0), 0)}</h4>
-            <ul>
-              {selectedItems.map((item) => (
-                <li key={item.key} className="order-summary-item">
-                  <span>
-                    <span className={`veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}`}>
-                      {item.isVeg ? '●' : '▲'}
+            <div className="order-summary-title" onClick={toggleOrderSummary}>
+              <span className="toggle-icon">{isOrderSummaryExpanded ? '▲' : '▼'}</span>
+              <span className="order-summary-text">
+                Selected Items: {selectedItems.reduce((sum, item) => sum + (item.quantity || 0), 0)}
+              </span>
+            </div>
+            {isOrderSummaryExpanded && (
+              <ul>
+                {selectedItems.map((item) => (
+                  <li key={item.key} className="order-summary-item">
+                    <span>
+                      <span className={`veg-indicator ${item.isVeg ? 'veg' : 'non-veg'}`}>
+                        {item.isVeg ? '●' : '▲'}
+                      </span>
+                      {item.name} ({item.portion}) x {item.quantity}
                     </span>
-                    {item.name} ({item.portion}) x {item.quantity}
-                  </span>
-                  <span>₹{(item.price * item.quantity).toFixed(2)}</span>
-                  <button onClick={() => handleRemoveItem(item.key)} className="remove-button">
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                    <button onClick={() => handleRemoveItem(item.key)} className="remove-button">
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
             <p className="order-total">
               Total: ₹{selectedItems.reduce((sum, item) => sum + (item.price * (item.quantity || 0)), 0).toFixed(2)}
             </p>

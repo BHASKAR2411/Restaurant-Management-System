@@ -17,30 +17,45 @@
   padding: 1rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.payment-header h2 {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 600;
+.restaurant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.back-button {
-  position: absolute;
-  left: 1rem;
-  background: none;
-  border: none;
+.restaurant-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2ecc71;
+}
+
+.restaurant-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #2ecc71;
   color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
-.back-button:hover {
-  transform: scale(1.2);
+.restaurant-name {
+  font-size: 1rem;
+  font-weight: 500;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .table-indicator {
@@ -50,9 +65,6 @@
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 500;
-  text-align: center;
-  margin: 0.5rem auto;
-  max-width: 150px;
 }
 
 .payment-content {
@@ -156,8 +168,15 @@
     padding: 1rem;
   }
 
-  .payment-header h2 {
-    font-size: 1.4rem;
+  .restaurant-logo,
+  .restaurant-logo-placeholder {
+    width: 36px;
+    height: 36px;
+  }
+
+  .restaurant-name {
+    font-size: 0.9rem;
+    max-width: 150px;
   }
 
   .payment-card {
@@ -186,14 +205,6 @@
     padding: 0.75rem;
   }
 
-  .payment-header h2 {
-    font-size: 1.2rem;
-  }
-
-  .back-button {
-    font-size: 1rem;
-  }
-
   .table-indicator {
     padding: 0.3rem 0.8rem;
     font-size: 0.85rem;
@@ -216,5 +227,16 @@
   .payment-card button {
     padding: 0.5rem 1.2rem;
     font-size: 0.9rem;
+  }
+
+  .restaurant-logo,
+  .restaurant-logo-placeholder {
+    width: 32px;
+    height: 32px;
+  }
+
+  .restaurant-name {
+    font-size: 0.85rem;
+    max-width: 120px;
   }
 }

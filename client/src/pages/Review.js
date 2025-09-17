@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { toast } from "react-toastify"
-import { useNavigate } from "react-router-dom"  // Added import for useNavigate
 import LoadingSpinner from "../components/LoadingSpinner"
 import { getTableData } from "../utils/storage"
 import "../styles/Review.css"
@@ -14,7 +13,7 @@ const Review = () => {
   const [comment, setComment] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleReviewLink, setGoogleReviewLink] = useState("")
-  const navigate = useNavigate()  // Added useNavigate hook
+  const [restaurant, setRestaurant] = useState(null)
   const { tableNo, restaurantId } = getTableData()
 
   useEffect(() => {
@@ -27,6 +26,7 @@ const Review = () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${restaurantId}`)
         setGoogleReviewLink(res.data.googleReviewLink)
+        setRestaurant(res.data)
       } catch (error) {
         console.error("Error fetching restaurant:", error)
       }
@@ -75,10 +75,6 @@ const Review = () => {
     }
   }
 
-  const navigateToHome = () => {
-    navigate(`/?table=${tableNo}&restaurant=${restaurantId}`)  // Updated to use navigate instead of window.location.href
-  }
-
   if (!tableNo || !restaurantId) {
     return <div className="error-container">Error: Invalid table or restaurant</div>
   }
@@ -91,12 +87,22 @@ const Review = () => {
     <div className="review-container">
       {loading && <LoadingSpinner />}
       <div className="review-header">
-        <button className="back-button" onClick={navigateToHome}>
-          ← Back
-        </button>
-        <h2>Share Your Opinion</h2>
+        <div className="restaurant-info">
+          {restaurant?.profilePicture ? (
+            <img
+              src={restaurant.profilePicture}
+              alt={`${restaurant.restaurantName} logo`}
+              className="restaurant-logo"
+            />
+          ) : (
+            <div className="restaurant-logo-placeholder">
+              {restaurant?.restaurantName[0] || 'R'}
+            </div>
+          )}
+          <span className="restaurant-name">{restaurant?.restaurantName || 'Restaurant'}</span>
+        </div>
+        {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       </div>
-      {tableNo && <div className="table-indicator">Table {tableNo}</div>}
       <div className="review-content">
         <div className="review-card">
           <h3>How was your experience?</h3>

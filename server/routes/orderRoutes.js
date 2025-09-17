@@ -1,6 +1,7 @@
 const express = require('express');
 const {
   createOrder,
+  createAdminOrder,
   getLiveOrders,
   getRecurringOrders,
   getPastOrders,
@@ -12,6 +13,7 @@ const {
   reprintReceipt,
   toggleSubmitDisabled,
   getSubmitDisabledStatus,
+  exportOrders,
 } = require('../controllers/orderController');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -44,6 +46,7 @@ const completeOrderSchema = yup.object().shape({
 });
 
 router.post('/', validate(orderSchema), createOrder);
+router.post('/admin', auth, validate(orderSchema), createAdminOrder);
 router.get('/live', auth, getLiveOrders);
 router.get('/recurring', auth, getRecurringOrders);
 router.get('/past', auth, getPastOrders);
@@ -52,8 +55,9 @@ router.post('/complete', auth, validate(completeOrderSchema), completeOrder);
 router.get('/stats', auth, getOrderStats);
 router.delete('/:id', auth, deleteOrder);
 router.get('/restaurant/details', auth, getRestaurantDetails);
-router.get('/reprint/:tableNo', auth, reprintReceipt);
+router.get('/reprint/:orderId', auth, reprintReceipt);
 router.put('/toggle-submit-disabled', auth, toggleSubmitDisabled);
 router.get('/submit-disabled', getSubmitDisabledStatus);
+router.get('/export', auth, exportOrders);
 
 module.exports = router;

@@ -17,7 +17,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTable, setSelectedTable] = useState('');
   const [gstRate, setGstRate] = useState(localStorage.getItem('gstRate') || '0');
-  const [gstType, setGstType] = useState('inclusive');
+  const [gstType, setGstType] = useState([]);
   const [serviceCharge, setServiceCharge] = useState('');
   const [discount, setDiscount] = useState('');
   const [message, setMessage] = useState('Have a nice day!');
@@ -31,6 +31,19 @@ const Orders = () => {
   const [pastOrderDateFilter, setPastOrderDateFilter] = useState('');
   const [visiblePastOrders, setVisiblePastOrders] = useState(20);
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState('month');
+  const [exportYear, setExportYear] = useState(new Date().getFullYear());
+  const [selectedMonths, setSelectedMonths] = useState([]);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const years = [];
+  for (let y = 2020; y <= new Date().getFullYear() + 1; y++) {
+    years.push(y);
+  }
 
   useEffect(() => {
     const fetchOrdersAndRestaurantDetails = async () => {
@@ -110,6 +123,42 @@ const Orders = () => {
       }
     });
 
+    socket.on('orderUpdated', (order) => {
+      if (order.restaurantId === user.id) {
+        console.log('Received orderUpdated:', order);
+        setLiveOrders((prev) => prev.filter((o) => o.id !== order.id));
+        setPastOrders((prev) => prev.filter((o) => o.id !== order.id));
+        setRecurringOrders((prev) => {
+          const existing = prev.find((o) => o.id === order.id);
+          if (existing) {
+            return prev.map((o) => (o.id === order.id ? order : o));
+          } else {
+            return [...prev, order];
+          }
+        });
+        toast.info(`Order #${order.id} updated to recurring`);
+      }
+    });
+
+    socket.on('ordersCompleted', (data) => {
+      console.log('Received ordersCompleted:', data);
+      if (data.restaurantId === user.id) {
+        setRecurringOrders((prev) => prev.filter((o) => o.tableNo !== parseInt(data.tableNo)));
+        setPastOrders((prev) => [...prev, ...data.orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        toast.info(`Orders for table ${data.tableNo} moved to past`);
+      }
+    });
+
+    socket.on('orderDeleted', (data) => {
+      console.log('Received orderDeleted:', data);
+      if (data.restaurantId === user.id) {
+        setLiveOrders((prev) => prev.filter((o) => o.id !== data.id));
+        setRecurringOrders((prev) => prev.filter((o) => o.id !== data.id));
+        setPastOrders((prev) => prev.filter((o) => o.id !== data.id));
+        toast.info(`Order #${data.id} deleted`);
+      }
+    });
+
     const pollOrders = async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/orders/live`, {
@@ -167,6 +216,7 @@ const Orders = () => {
       setRecurringOrders([...recurringOrders, res.data]);
       toast.success('Order moved to recurring');
     } catch (error) {
+      console.error('Error completing order:', error);
       toast.error('Failed to process order');
     }
     setLoading(false);
@@ -184,6 +234,7 @@ const Orders = () => {
       setPastOrders(pastOrders.filter((order) => order.id !== id));
       toast.success('Order deleted successfully');
     } catch (error) {
+      console.error('Error deleting order:', error);
       toast.error('Failed to delete order');
     }
     setLoading(false);
@@ -201,6 +252,7 @@ const Orders = () => {
       setRecurringOrders([...recurringOrders, res.data]);
       toast.success('Order moved back to recurring');
     } catch (error) {
+      console.error('Error moving to recurring:', error);
       toast.error('Failed to move order to recurring');
     }
     setLoading(false);
@@ -342,20 +394,20 @@ const Orders = () => {
       return acc;
     }, []);
 
-    const subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    let discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
+    const originalSubtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const rate = parseFloat(gstRate) / 100;
+    let discountAmount = discount ? (originalSubtotal * parseFloat(discount)) / 100 : 0;
     const serviceChargeAmount = parseFloat(serviceCharge) || 0;
     let gstAmount = 0;
     let taxableAmount = 0;
-    const rate = parseFloat(gstRate) / 100;
 
     if (gstType === 'inclusive') {
-      const baseSubtotal = subtotal / (1 + rate);
+      const baseSubtotal = originalSubtotal / (1 + rate);
       discountAmount = discount ? (baseSubtotal * parseFloat(discount)) / 100 : 0;
       taxableAmount = baseSubtotal - discountAmount;
       gstAmount = taxableAmount * rate;
     } else {
-      taxableAmount = subtotal - discountAmount;
+      taxableAmount = originalSubtotal - discountAmount;
       gstAmount = taxableAmount * rate;
     }
 
@@ -484,7 +536,7 @@ const Orders = () => {
                 .join('')}
             </table>
             <div class="totals">
-              <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
+              <p><span>Subtotal:</span><span>₹${originalSubtotal.toFixed(2)}</span></p>
               ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
               <p><span>Service Charge:</span><span>₹${serviceChargeAmount.toFixed(2)}</span></p>
               <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
@@ -521,6 +573,7 @@ const Orders = () => {
       setPastOrders([...pastOrders, ...tableOrders.map((o) => ({ ...o, status: 'past' }))].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       toast.success('Receipt printed and orders moved to past');
     } catch (error) {
+      console.error('Error completing order:', error);
       toast.error('Failed to complete order');
     }
 
@@ -528,18 +581,14 @@ const Orders = () => {
     setServiceCharge('');
     setDiscount('');
     setMessage('Have a nice day!');
-    window.location.reload();
   };
 
-  const handleReprint = async (tableNo) => {
+  const handleReprint = async (orderId) => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/orders/reprint/${tableNo}`, {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/orders/reprint/${orderId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
-      const { items, subtotal, discount, serviceCharge, gstRate, gstType, gstAmount, total, message } = res.data;
-
-      const discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
-      const taxableAmount = subtotal - discountAmount;
+      const { items, originalSubtotal, discountPercent, discountAmount, serviceCharge, gstRate, gstType, gstAmount, taxableAmount, total, message, tableNo, completionDate } = res.data;
 
       const receiptContent = `
         <html>
@@ -641,7 +690,7 @@ const Orders = () => {
               </div>
               <div class="details">
                 <p>Table No: ${tableNo}</p>
-                <p>Date: ${new Date().toLocaleString()}</p>
+                <p>Date: ${new Date(completionDate).toLocaleString()}</p>
               </div>
               <table>
                 <tr>
@@ -664,11 +713,11 @@ const Orders = () => {
                   .join('')}
               </table>
               <div class="totals">
-                <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
-                ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
+                <p><span>Subtotal:</span><span>₹${originalSubtotal.toFixed(2)}</span></p>
+                ${discountPercent ? `<p><span>Discount (${discountPercent}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
                 <p><span>Service Charge:</span><span>₹${serviceCharge.toFixed(2)}</span></p>
                 <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
-                ${gstRate !== '0' ? `<p><span>GST (${gstRate}% ${gstType}):</span><span>₹${gstAmount.toFixed(2)}</span></p>` : ''}
+                ${gstRate !== 0 ? `<p><span>GST (${gstRate}% ${gstType}):</span><span>₹${gstAmount.toFixed(2)}</span></p>` : ''}
                 <p class="grand-total"><span>Grand Total:</span><span>₹${total.toFixed(2)}</span></p>
               </div>
               ${message ? `<div class="message">${message}</div>` : ''}
@@ -685,6 +734,7 @@ const Orders = () => {
       printWindow.close();
       toast.success('Receipt reprinted');
     } catch (error) {
+      console.error('Error reprinting receipt:', error);
       toast.error('Failed to reprint receipt');
     }
   };
@@ -710,20 +760,20 @@ const Orders = () => {
       return acc;
     }, []);
 
-    const subtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    let discountAmount = discount ? (subtotal * parseFloat(discount)) / 100 : 0;
+    const originalSubtotal = groupedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const rate = parseFloat(gstRate) / 100;
+    let discountAmount = discount ? (originalSubtotal * parseFloat(discount)) / 100 : 0;
     const serviceChargeAmount = parseFloat(serviceCharge) || 0;
     let gstAmount = 0;
     let taxableAmount = 0;
-    const rate = parseFloat(gstRate) / 100;
 
     if (gstType === 'inclusive') {
-      const baseSubtotal = subtotal / (1 + rate);
+      const baseSubtotal = originalSubtotal / (1 + rate);
       discountAmount = discount ? (baseSubtotal * parseFloat(discount)) / 100 : 0;
       taxableAmount = baseSubtotal - discountAmount;
       gstAmount = taxableAmount * rate;
     } else {
-      taxableAmount = subtotal - discountAmount;
+      taxableAmount = originalSubtotal - discountAmount;
       gstAmount = taxableAmount * rate;
     }
 
@@ -764,7 +814,7 @@ const Orders = () => {
             .join('')}
         </table>
         <div class="totals">
-          <p><span>Subtotal:</span><span>₹${subtotal.toFixed(2)}</span></p>
+          <p><span>Subtotal:</span><span>₹${originalSubtotal.toFixed(2)}</span></p>
           ${discount ? `<p><span>Discount (${discount}%):</span><span>-₹${discountAmount.toFixed(2)}</span></p>` : ''}
           <p><span>Service Charge:</span><span>₹${serviceChargeAmount.toFixed(2)}</span></p>
           <p><span>Taxable Amount:</span><span>₹${taxableAmount.toFixed(2)}</span></p>
@@ -787,6 +837,72 @@ const Orders = () => {
 
   const handleShowMore = () => {
     setVisiblePastOrders((prev) => prev + 20);
+  };
+
+  const handleExportClick = () => {
+    console.log('Export button clicked, opening modal');
+    setShowExportModal(true);
+  };
+
+  const handleCloseModal = () => {
+    console.log('Closing export modal');
+    setShowExportModal(false);
+  };
+
+  const handleMonthChange = (e) => {
+    const month = parseInt(e.target.value);
+    console.log('Month toggled:', month, 'checked:', e.target.checked);
+    if (e.target.checked) {
+      setSelectedMonths([...selectedMonths, month]);
+    } else {
+      setSelectedMonths(selectedMonths.filter((m) => m !== month));
+    }
+  };
+
+  const handleDownload = async () => {
+    console.log('Initiating download with type:', exportType, 'year:', exportYear, 'months:', selectedMonths, 'from:', fromDate, 'to:', toDate);
+    try {
+      let params = `type=${exportType}&year=${exportYear}`;
+      if (exportType === 'month') {
+        if (selectedMonths.length === 0) {
+          toast.error('Please select at least one month');
+          console.log('No months selected for export');
+          return;
+        }
+        params += `&months=${selectedMonths.join(',')}`;
+      } else if (exportType === 'custom') {
+        if (!fromDate || !toDate) {
+          toast.error('Please select date range');
+          console.log('Missing date range for custom export');
+          return;
+        }
+        params = `type=custom&from=${fromDate}&to=${toDate}`;
+      }
+      console.log('Sending export request with params:', params);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/orders/export?${params}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        responseType: 'blob',
+      });
+      console.log('Export request successful, received response');
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `past_orders_${exportType}_${exportType === 'custom' ? `${fromDate}_to_${toDate}` : exportYear}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setShowExportModal(false);
+      toast.success('Orders exported successfully');
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      if (error.response) {
+        console.log('Error response:', error.response.status, error.response.data);
+        toast.error(`Failed to export orders: ${error.response.data.message || 'Server error'}`);
+      } else {
+        toast.error('Failed to export orders: Network error');
+      }
+    }
   };
 
   return (
@@ -820,8 +936,8 @@ const Orders = () => {
 
         <div className="recurring-receipt-container">
           <div className="recurring-orders">
-            <div className="order-table-container">
-              <OrderTable title="Recurring Orders" orders={recurringOrders.slice(0, 5)} onDelete={handleDelete} />
+            <div className="order-table-container recurring-orders-table">
+              <OrderTable title="Recurring Orders" orders={recurringOrders} onDelete={handleDelete} />
             </div>
           </div>
 
@@ -907,6 +1023,7 @@ const Orders = () => {
                 value={pastOrderDateFilter}
                 onChange={(e) => setPastOrderDateFilter(e.target.value)}
               />
+              <button className="export-btn" onClick={handleExportClick}>Export to Excel</button>
             </div>
           </div>
           <div className="order-table-container past-orders-table">
@@ -925,6 +1042,54 @@ const Orders = () => {
             </button>
           )}
         </div>
+        {showExportModal && (
+          <div className="export-modal">
+            <div className="modal-content">
+              <h3>Export Past Orders</h3>
+              <select value={exportType} onChange={(e) => setExportType(e.target.value)}>
+                <option value="month">By Month</option>
+                <option value="year">By Year</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              {(exportType === 'month' || exportType === 'year') && (
+                <select value={exportYear} onChange={(e) => setExportYear(e.target.value)}>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {exportType === 'month' && (
+                <div className="months-selection">
+                  {monthNames.map((name, index) => (
+                    <label key={index}>
+                      <input
+                        type="checkbox"
+                        value={index + 1}
+                        checked={selectedMonths.includes(index + 1)}
+                        onChange={handleMonthChange}
+                      />
+                      {name}
+                    </label>
+                  ))}
+                </div>
+              )}
+              {exportType === 'custom' && (
+                <div className="custom-date">
+                  <label>From:</label>
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                  <label>To:</label>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                </div>
+              )}
+              <div className="modal-buttons">
+                <button onClick={handleDownload}>Download</button>
+                <button onClick={handleCloseModal}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
         <footer className="page-footer">Powered by SAE. All rights reserved.</footer>
       </div>
     </div>
