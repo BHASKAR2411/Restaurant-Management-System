@@ -21,7 +21,7 @@ const Layout = ({ children }) => {
 
 const App = () => {
   return (
-    <Router>
+    <Router basename='/client'>
       <ToastContainer />
       <Layout>
         <Routes>
