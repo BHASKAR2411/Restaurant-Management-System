@@ -74,7 +74,10 @@ const Menu = () => {
     };
     fetchMenuAndStatus();
 
-    const socket = io(process.env.REACT_APP_API_URL.replace('/api', ''));
+    const socketUrl = process.env.REACT_APP_API_URL.replace(/\/api$/, '') + '/socket.io';
+    console.log('Intended WebSocket URL:', socketUrl);
+    const socket = io(socketUrl, { path: '/socket.io' }); // Ensure path is explicit
+    console.log('Actual WebSocket connection attempt:', socket.io.uri);
     socket.on('connect', () => {
       console.log('WebSocket connected:', socket.id);
     });
